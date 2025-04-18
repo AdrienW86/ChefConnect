@@ -60,20 +60,6 @@
 }
 
 @media (max-width: 600px) {
-  .page {
-  
-  }
 
-  .main {
-    align-items: center;
-  }
-
-  
-
-  .footer {
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-  }
 }
 

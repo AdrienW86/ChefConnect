@@ -13,8 +13,8 @@ export default function Home() {
           className={styles.logo}
           src="/logo.png"
           alt="logo"
-          width={200}
-          height={200}
+          width={150}
+          height={150}
           priority
         />       
       </main>
