@@ -19,7 +19,7 @@ export default function Home() {
         />       
       </main>
       <section className={styles.content}>
-        <Sign />
+       
         <Login />
         <ForgotPassword />
       </section>
