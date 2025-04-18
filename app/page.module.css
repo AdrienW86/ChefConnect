@@ -5,7 +5,6 @@
   overflow: hidden;
 }
 
-
 .main {
   flex: 0 0 30%; /* 30% de la hauteur totale */
   display: flex;

@@ -447,7 +447,7 @@ const updateUserSession = async () => {
   };
    
   return (
-    <>
+    <div className={styles.container}>
       <Header />
       <section className={styles.time}>
         <p>{date}</p>
@@ -629,6 +629,6 @@ const updateUserSession = async () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

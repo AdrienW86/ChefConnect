@@ -59,55 +59,55 @@ export default function Dashboard() {
   
   return (
     <header className={styles.header}>
-        <div className={styles.boxLogo}>
-            <Image
-                className={styles.logo}
-                src="/logo.png"
-                alt="logo"
-                width={100}
-                height={100}
-                priority
-            />
-        </div>
-        <div className={styles.titleBox}>
-            <h1 className={styles.title}>{user.username}</h1>
-        </div>
-        <div className={styles.boxParams}>      
-            <Image
-                onClick={toggleMenu}
-                className={styles.params}
-                src="/params-grey2.svg"
-                alt="button params"
-                width={50}
-                height={50}
-                priority
-            />   
-            <button className={styles.logoutButton} onClick={handleLogout}>
-                Déconnexion
-            </button>          
-            {isMenuOpen && (
-                <section className={styles.dropdownMenu}>
-                    <button onClick={toggleMenu} className={styles.closeModal}> X </button>
-                    <div className={styles.profil}>
-                      <h3 className={styles.h3}> Profil </h3>
-                        <a href="#">Consulter</a>
-                        <a href="#">Modifier</a>
-                        <a href="#">Editer la carte</a>
-                    </div>   
-                    <div className={styles.profil}>
-                      <h3 className={styles.h3}> Recettes </h3>
-                        <a href="#">Journalière</a>
-                        <a href="#">Mensuelle</a>
-                        <a href="#">Annuelle</a>
-                    </div>   
-                    <div className={styles.comptes}>
-                      <h3 className={styles.h3}> Comptabilité </h3>
-                        <a href="#">Envoyer à la comptable</a>
-                        <a href="#">Modifier l'adresse comptable</a>
-                    </div>          
-                </section>
-            )}
-        </div>
+      <div className={styles.boxLogo}>
+        <Image
+          className={styles.logo}
+          src="/logo.png"
+          alt="logo"
+          width={50}
+          height={50}
+          priority
+        />
+      </div>
+      <div className={styles.titleBox}>
+        <h1 className={styles.title}>{user.username}</h1>
+      </div>
+      <div className={styles.boxParams}>      
+        <Image
+          onClick={toggleMenu}
+          className={styles.params}
+          src="/params-grey2.svg"
+          alt="button params"
+          width={50}
+          height={50}
+          priority
+        />   
+        <button className={styles.logoutButton} onClick={handleLogout}>
+          Déconnexion
+        </button>          
+        {isMenuOpen && (
+          <section className={styles.dropdownMenu}>
+            <button onClick={toggleMenu} className={styles.closeModal}> X </button>
+            <div className={styles.profil}>
+              <h3 className={styles.h3}> Profil </h3>
+                <a href="#">Consulter</a>
+                <a href="#">Modifier</a>
+                <a href="#">Editer la carte</a>
+            </div>   
+            <div className={styles.profil}>
+              <h3 className={styles.h3}> Recettes </h3>
+                <a href="#">Journalière</a>
+                <a href="#">Mensuelle</a>
+                <a href="#">Annuelle</a>
+            </div>   
+            <div className={styles.comptes}>
+              <h3 className={styles.h3}> Comptabilité </h3>
+                <a href="#">Envoyer à la comptable</a>
+                <a href="#">Modifier l'adresse comptable</a>
+            </div>          
+          </section>
+        )}
+      </div>
     </header>      
   );
 }
