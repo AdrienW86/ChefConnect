@@ -10,7 +10,12 @@
 .boxLogo {
     width: 20%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
+}
+
+.logo {
+    margin: auto;
 }
 
 .titleBox, .params {
@@ -52,10 +57,10 @@
     border: none;
     width: 100px;
     text-align: center;
-    padding: 10px 15px;
+    padding: 5px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: 0.7em;
     margin: 5px auto
   }
 
