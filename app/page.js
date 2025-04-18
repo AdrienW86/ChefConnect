@@ -25,7 +25,7 @@ export default function Home() {
       </section>
    
       <footer className={styles.footer}>
-        <Link href="https://www.code-v.fr" target="_blank" rel="noopener noreferrer">
+        <Link  className={styles.link} href="https://www.code-v.fr" target="_blank" rel="noopener noreferrer">
           Propulsé par <span className={styles.span}> Codev </span>
         </Link>
       </footer>

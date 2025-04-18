@@ -26,15 +26,19 @@
 
 .footer {
   display: flex;
+  flex-direction: column;
   width: 100%;
   justify-content: center;
-  padding: 30px;
   height: 10vh;
   color: white;
   font-weight: bold;
   background-color: rgb(29, 85, 85);
 }
 
+.link {
+  width: 100%;
+  text-align: center;
+}
 
 
 /* Enable hover only on non-touch devices */
