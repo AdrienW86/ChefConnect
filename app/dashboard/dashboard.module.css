@@ -29,9 +29,9 @@
 .mainBtn, .startBtn, .stopBtn {
     width: 90%;
     padding: 8px;
-    font-size: 1em;
+    font-size: 0.9em;
     font-weight: bold;
-    margin: 20px 5%;
+    margin: 10px 5%;
     transition: .4s ease-in-out;
     border: 2px solid black;
 }
@@ -415,3 +415,9 @@
     padding: 8px;
     width: 150px;
 }
+
+@media (max-width: 600px) {
+    .container {
+      height: 100dvh;
+    }
+  }
