@@ -1,6 +1,10 @@
+.container {
+    height: 100vh
+}
+
 .time {
     padding: 8px;
-    height: 35px;
+    height: 5vh;
     font-weight: bold;
     display: flex;
     justify-content: space-between;
@@ -10,12 +14,12 @@
 
 .main {
     display: flex;
-    height: calc(100vh - 175px);
-    background-color: rgb(223, 223, 223);
+    height: 85vh;
+    background-color: rgb(29, 85, 85);
 }
 
 .aside {
-    height: calc(100vh - 175px);
+    height: 85vh;
     width: 30%;
     padding: 8px;
     border-right: 1px solid black;
@@ -47,7 +51,7 @@
 }
 
 .table {
-    height: calc(100vh - 175px);
+    height: 85vh;
     width: 100%;
     padding: 16px;
     background-color: rgb(158, 158, 158)
