@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export default function ResetPassword() {
@@ -13,7 +13,7 @@ export default function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation du mot de passe (exemple simple)
+    // Validate password
     if (password.length < 6) {
       setMessage("Le mot de passe doit comporter au moins 6 caractères.");
       return;
@@ -28,13 +28,18 @@ export default function ResetPassword() {
     const data = await res.json();
     setMessage(data.message);
 
-    // Si le mot de passe a été réinitialisé avec succès, redirige vers la page de connexion
     if (res.ok) {
       setTimeout(() => {
-        router.push("/");  // Redirige vers la page de connexion après 2 secondes
+        router.push("/");  // Redirect to login page after 2 seconds
       }, 2000);
     }
   };
+
+  useEffect(() => {
+    if (!token) {
+      setMessage("Token de réinitialisation invalide.");
+    }
+  }, [token]);
 
   return (
     <div>
