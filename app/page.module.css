@@ -1,22 +1,33 @@
 .page {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  height: 100vh;
-  background-color: rgb(29, 85, 85);
+  height: 100dvh; 
+  overflow: hidden;
 }
 
+
 .main {
+  flex: 0 0 30%; /* 30% de la hauteur totale */
   display: flex;
   justify-content: center;
-  padding: 30px;
-  height: 30vh;
+  align-items: center;
   background-color: rgb(29, 85, 85);
 }
 
 .content {
-  height: 60vh;
+  flex: 1; /* prend tout l’espace restant */
+  overflow: hidden; /* évite tout scroll inutile */
   background-color: aliceblue;
+}
+
+.footer {
+  flex: 0 0 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(29, 85, 85);
+  color: white;
+  font-weight: bold;
 }
 
 .span {
