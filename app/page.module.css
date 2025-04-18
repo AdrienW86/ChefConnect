@@ -43,9 +43,7 @@
 
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
-  .page {
-    height: 100dvh;
-  }
+ 
 
   a.secondary:hover {
     background: var(--button-secondary-hover);
@@ -59,6 +57,8 @@
 }
 
 @media (max-width: 600px) {
-
+  .page {
+    height: 100dvh;
+  }
 }
 
