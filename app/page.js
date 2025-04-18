@@ -13,18 +13,21 @@ export default function Home() {
           className={styles.logo}
           src="/logo.png"
           alt="logo"
-          width={280}
-          height={280}
+          width={200}
+          height={200}
           priority
         />       
       </main>
-   <Sign />
-      <Login />
-      <ForgotPassword />
+      <section className={styles.content}>
+        <Sign />
+        <Login />
+        <ForgotPassword />
+      </section>
+   
       <footer className={styles.footer}>
-      <Link href="https://www.code-v.fr" target="_blank" rel="noopener noreferrer">
-        Propulsé par <span className={styles.span}> Codev </span>
-      </Link>
+        <Link href="https://www.code-v.fr" target="_blank" rel="noopener noreferrer">
+          Propulsé par <span className={styles.span}> Codev </span>
+        </Link>
       </footer>
     </div>
   );
