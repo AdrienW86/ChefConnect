@@ -436,4 +436,9 @@
     .table {
         height: 85dvh;
     }
+
+    .mainBtn, .startBtn, .stopBtn {
+        width: 96%; 
+        margin: 10px 2%;
+    }
   }
