@@ -1,9 +1,8 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { Suspense } from "react";
+import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function ResetPassword() {
+function ResetPassword() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [password, setPassword] = useState("");
@@ -35,12 +34,6 @@ export default function ResetPassword() {
     }
   };
 
-  useEffect(() => {
-    if (!token) {
-      setMessage("Token de réinitialisation invalide.");
-    }
-  }, [token]);
-
   return (
     <div>
       <h2>Réinitialisation du mot de passe</h2>
@@ -56,5 +49,14 @@ export default function ResetPassword() {
       </form>
       <p>{message}</p>
     </div>
+  );
+}
+
+// Wrap ResetPassword component with Suspense boundary
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <ResetPassword />
+    </Suspense>
   );
 }
