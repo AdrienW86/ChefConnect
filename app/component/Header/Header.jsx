@@ -72,16 +72,10 @@ export default function Dashboard() {
       <div className={styles.titleBox}>
         <h1 className={styles.title}>{user.username}</h1>
       </div>
-      <div className={styles.boxParams}>      
-        <Image
-          onClick={toggleMenu}
-          className={styles.params}
-          src="/params-grey2.svg"
-          alt="button params"
-          width={50}
-          height={50}
-          priority
-        />   
+      <div className={styles.boxParams}>           
+        <button className={styles.paramsButton} onClick={toggleMenu}>
+         Paramètres
+        </button>
         <button className={styles.logoutButton} onClick={handleLogout}>
           Déconnexion
         </button>          
