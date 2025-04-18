@@ -28,7 +28,7 @@
 
 .mainBtn, .startBtn, .stopBtn {
     width: 90%;
-    height: 50px;
+    height: 40px;
     padding: 5px;
     font-size: 0.7em;
     font-weight: bold;
@@ -95,7 +95,7 @@
     border: 2px solid black;
     padding: 5px;
     width: 90%;
-    height: 50px;
+    height: 40px;
     font-size: 0.8em;
     margin: 10px 5%;
     text-align: center;
