@@ -1,0 +1,31 @@
+.h1 {
+    display: flex;
+    justify-content: center;
+    margin: 40px;
+    color: rgb(29, 85, 85);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    width: 300px;
+    margin: auto;
+    padding-top: 20px;
+    border-radius: 20px;
+    border: 22px solid rgb(29, 85, 85);
+}
+
+.input {
+    width: 200px;
+   padding: 10px;
+    margin: 20px auto;
+}
+
+.btn {
+    width: 150px;
+    margin: 20px auto;
+    padding: 8px;
+    border-radius: 20px;
+    border: 1px solid rgb(29, 85, 85);
+}

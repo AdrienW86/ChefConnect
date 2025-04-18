@@ -1,0 +1,79 @@
+.paymentModal {
+    position: fixed;
+    top: 0;
+    right: 0; 
+    width: 100%;
+    height: 100%;
+    display: flex;
+    z-index: 100000;
+}
+
+.paymentModalContent {  
+    height: 100vh;
+    width: 100%;
+    top: 0;
+    right: 0;
+    background-color: rgb(29, 85, 85);
+}
+
+.closeBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    height: 20px;
+    width: 20px;
+    background-color: rgb(248, 248, 248);
+}
+
+.paiementTitle {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    color: rgb(0, 0, 0);
+    font-size: 1.5em;
+    text-decoration: underline;
+    margin-bottom: 50px;
+}
+
+.paymentItems {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.paymentItem {
+    color: rgb(255, 255, 255);
+    margin-top: 8px;
+    margin-left: 12px;
+    display: flex;
+    font-weight: bold;
+    border-bottom: 1px solid white;
+    justify-content: space-between;
+}
+
+.paymentInput {
+    margin-right: 8px;
+    width: 40px;
+}
+
+.paymentActions {
+    position: absolute;
+    bottom: 50px;
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
+.payFullBtn {
+    padding: 8px;
+    width: 150px;
+}
+
+.paySelectedBtn {
+    padding: 8px;
+    width: 150px;
+}

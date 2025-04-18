@@ -1,0 +1,107 @@
+.header {
+    display: flex;
+    color: white;
+    padding: 20px 0;
+    height: 140px;
+    background-color: rgb(29, 85, 85);
+}
+
+.boxLogo {
+    width: 20%;
+    display: flex;
+    justify-content: center;
+}
+
+.titleBox, .params {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.titleBox {
+    width: 60%;
+}
+
+.title {
+    text-align: center;
+    padding: 5px;
+    margin: 10px;
+    border: 1px solid white;
+}
+
+.boxParams {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 20%;
+}
+
+.params {
+    margin: auto;
+    transition: transform 0.3s ease;
+}
+
+.params:hover {
+    cursor: pointer;
+    transform: rotate(180deg);
+} 
+
+.logoutButton {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    width: 120px;
+    text-align: center;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    margin: 10px auto 0 auto
+  }
+  
+  .logoutButton:hover {
+    background-color: #c9302c;
+  }
+
+.dropdownMenu {
+    position : absolute;
+    display: flex;
+    top: 0;
+    right: 0;
+    background-color: grey;
+    height: 140px;
+    width: 100%;  
+}
+
+.closeModal {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    color: white;
+    background-color: red;
+}
+
+.h3 {
+    color: black;
+    margin-bottom: 10px;
+}
+
+.profil {
+    padding: 5px;
+    width: 33%;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    border-right: 1px solid black;
+}
+
+.comptes {
+    padding: 5px;
+    width: 34%;
+    display: flex;
+    height: 100%;
+    flex-direction: column; 
+}

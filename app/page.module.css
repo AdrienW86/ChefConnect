@@ -1,0 +1,68 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+  background-color: rgb(29, 85, 85);
+}
+
+.span {
+  font-style: italic;
+  color: red;
+}
+
+.footer {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  padding: 30px;
+  color: white;
+  font-weight: bold;
+  position: absolute;
+  bottom: 0;
+  background-color: rgb(29, 85, 85);
+}
+
+
+
+/* Enable hover only on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  a.primary:hover {
+    background: var(--button-primary-hover);
+    border-color: transparent;
+  }
+
+  a.secondary:hover {
+    background: var(--button-secondary-hover);
+    border-color: transparent;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+  
+  }
+
+  .main {
+    align-items: center;
+  }
+
+  
+
+  .footer {
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
