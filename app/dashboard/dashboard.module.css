@@ -420,4 +420,16 @@
     .container {
       height: 100dvh;
     }
+
+    .time {      
+        height: 5dvh;
+    }
+
+    .main {
+        height: 85dvh;
+    }
+    
+    .aside {
+        height: 85dvh;
+    }
   }

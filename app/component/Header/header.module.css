@@ -124,3 +124,10 @@
     height: 100%;
     flex-direction: column; 
 }
+
+
+@media (max-width: 600px) {
+    .container {
+      height: 10dvh;
+    }
+  }
