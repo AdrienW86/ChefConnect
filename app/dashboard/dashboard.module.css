@@ -28,8 +28,8 @@
 
 .mainBtn, .startBtn, .stopBtn {
     width: 90%;
-    padding: 8px;
-    font-size: 0.9em;
+    padding: 5px;
+    font-size: 0.8em;
     font-weight: bold;
     margin: 10px 5%;
     transition: .4s ease-in-out;
@@ -92,9 +92,9 @@
 
 .inputTable {
     border: 2px solid black;
-    padding: 8px;
+    padding: 5px;
     width: 90%;
-    font-size: 1em;
+    font-size: 0.8em;
     margin: 10px 5%;
     text-align: center;
 }
