@@ -10,12 +10,12 @@
   display: flex;
   justify-content: center;
   padding: 30px;
-  height: 20vh;
+  height: 30vh;
   background-color: rgb(29, 85, 85);
 }
 
 .content {
-  height: 70vh;
+  height: 60vh;
   background-color: aliceblue;
 }
 

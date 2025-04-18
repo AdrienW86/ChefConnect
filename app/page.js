@@ -19,9 +19,10 @@ export default function Home() {
         />       
       </main>
       <section className={styles.content}>
-       
+      
+
         <Login />
-        <ForgotPassword />
+       
       </section>
    
       <footer className={styles.footer}>

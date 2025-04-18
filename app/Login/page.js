@@ -31,7 +31,7 @@ export default function Login() {
   };
 
   return (
-    <div>
+    <div className={styles.login}>
       <h1 className={styles.h1}>Connexion</h1>
       <form onSubmit={handleSubmit} className={styles.form}>
         <input className={styles.input}
