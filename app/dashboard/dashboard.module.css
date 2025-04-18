@@ -51,7 +51,7 @@
 }
 
 .table {
-    height: 85vh;
+    height: 100%;
     width: 100%;
     padding: 16px;
     background-color: rgb(158, 158, 158)
