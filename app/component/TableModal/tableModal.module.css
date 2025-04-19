@@ -36,6 +36,7 @@
     font-size: 1.5em;
     text-decoration: underline;
     margin-bottom: 10px;
+    color: white;
 }
 
 .commandeBox {
@@ -103,9 +104,26 @@
 }
 
 .menuAside {
-    width: calc(100vh - 300px);
-    width: 300px;
+    width: 100px;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+}
+
+.btnTableModalValid, .btnTableModal, .btnTableModalPay {
+    height: 40px;
+    width: 100px;
+    color: white;
+}
+
+.btnTableModalValid {
+    background-color: green;
+}
+
+.btnTableModal {
+    background-color: rgb(29, 85, 85);
+}
+
+.btnTableModalPay {
+    background-color: red;
 }

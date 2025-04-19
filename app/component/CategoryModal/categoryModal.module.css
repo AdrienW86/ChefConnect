@@ -2,16 +2,27 @@
     position: fixed;
     top: 0;
     right: 0;
-    min-width: 300px;
+    width: 120px;
     height: 100%;
     padding: 8px;
     background-color: rgb(177, 177, 177);
     display: flex;
+    flex-direction: column;
     z-index: 10000;
 }
 
-.closeBtn:hover {
+.closeBtn {
+    height: 30px;
+    width: 30px;
+    position: relative;
+    left: 80px;
+    transition: .4s ease-in-out;
     color: red;
+}
+
+.closeBtn:hover {
+    color: rgb(255, 255, 255);
+    background-color: red;
 }
 
 .categoryTitle {
@@ -24,11 +35,14 @@
 
 .categoryItems {
     display: flex;  
+    flex-direction: column;
 }
 
 .item {
+    font-size: 0.8em;
     padding: 8px;
     margin: 10px;
+    text-align: center;
     border: 1px solid black;
     background-color: rgb(255, 255, 255)
 }

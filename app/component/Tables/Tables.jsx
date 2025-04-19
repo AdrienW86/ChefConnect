@@ -1,6 +1,6 @@
 import { useState } from "react";
 import TableModal from "../TableModal/TableModal";
-import styles from "./Tables.module.css";
+import styles from "./tables.module.css";
 
 export default function Tables({ tables }) {
 

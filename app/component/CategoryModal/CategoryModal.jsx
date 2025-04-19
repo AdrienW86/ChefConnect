@@ -59,9 +59,7 @@ export default function CategoryModal({ currentCategory, isCategoryModalOpen, se
   };
 
   const handleAddItem = (item) => {
-    // Appel de la fonction `addItemToOrder` avec l'élément à ajouter
     addItemToOrder(item);
-    setIsCategoryModalOpen(false); // Ferme la modale après ajout
   };
 
   return (
@@ -72,7 +70,7 @@ export default function CategoryModal({ currentCategory, isCategoryModalOpen, se
         <div className={styles.categoryItems}>
           {getCurrentCategoryItems().map((item, index) => (
             <div key={index} className={styles.item} onClick={() => handleAddItem(item)}>
-              <span>{item.name} - {item.price}€</span>
+              <span>{item.name}</span>
             </div>
           ))}
         </div>
