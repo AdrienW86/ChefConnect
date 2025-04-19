@@ -46,6 +46,12 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                 }, [])
               .map((item) => (
                 <div key={item.id} className={styles.itemCommande}>
+                  <button
+                    className={styles.btnDelete}
+                    onClick={() => removeItemFromOrder(item, selectedTable)}
+                  >
+                  x
+                  </button>
                   <span className={styles.itemName}>
                     {item.name} (x{item.quantity})  {/* Affichage de la quantité totale */}
                   </span> 
@@ -53,12 +59,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                     En cours...
                       <button className={styles.btnServi} onClick={() => markAsServed(item, selectedTable)}>v</button>
                   </span>        
-                  <button
-                    className={styles.btnDelete}
-                    onClick={() => removeItemFromOrder(item, selectedTable)}
-                  >
-                  x
-                  </button>
+                  
                   <span className={styles.itemPrice}>{item.quantity * item.price}€</span>
                 </div>
               ))}

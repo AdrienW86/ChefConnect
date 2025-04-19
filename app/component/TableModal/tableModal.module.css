@@ -83,8 +83,8 @@
 
 .btnDelete {
     height: 20px;
-    width: 20px;
-   
+    width: 20px; 
+    margin-right: 3px;
     color: white;
     background-color: red;
 }
