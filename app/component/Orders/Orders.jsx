@@ -19,14 +19,30 @@ export default function Orders({ orders, setOrders }) {
   return (
     <div className={styles.ordersContainer}>
       <h3>Commandes en cours</h3>
-      {Object.keys(orders).map((table) => (
-        <div key={table} onClick={() => openModal(table)}>
-          Table {table} ({orders[table].length} articles)
-        </div>
-      ))}
+      {Object.keys(orders).map((table) => {
+        // Formatage du nombre d'articles pour chaque table
+        const totalItems = orders[table].reduce((acc, item) => acc + item.quantity, 0);
+
+        return (
+          <div
+            key={table}
+            onClick={() => openModal(table)}
+            className={styles.tableItem}
+          >
+            <span>Table {table}</span>
+            <span>({totalItems} article{totalItems > 1 ? "s" : ""})</span>
+          </div>
+        );
+      })}
       {isModalOpen && selectedTable !== null && (
-        <TableModal table={selectedTable} orders={orders} setOrders={setOrders} closeModal={closeModal} />
+        <TableModal
+          table={selectedTable}
+          orders={orders}
+          setOrders={setOrders}
+          closeModal={closeModal}
+        />
       )}
     </div>
   );
 }
+

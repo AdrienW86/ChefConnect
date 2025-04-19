@@ -1,42 +1,41 @@
 import { useState } from "react";
+import TableModal from "../TableModal/TableModal";
 import styles from "./Tables.module.css";
 
-export default function Tables({ tables, setTables, orders, setOrders }) {
-  const [tableNumber, setTableNumber] = useState("");
+export default function Tables({ tables }) {
 
-  const openTable = () => {
-    const num = parseInt(tableNumber, 10);
-    if (isNaN(num) || tables.includes(num)) return alert("Table invalide.");
-    setTables([...tables, num]);
-    setOrders({ ...orders, [num]: [] });
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [selectedTable, setSelectedTable] = useState(null); 
+  const [currentCategory, setCurrentCategory] = useState(null); 
 
-  const removeTable = (num) => {
-    if (!tables.includes(num)) return;
-    setTables(tables.filter((t) => t !== num));
-    const updatedOrders = { ...orders };
-    delete updatedOrders[num];
-    setOrders(updatedOrders);
+  const openModal = (table) => {
+    setSelectedTable(table);  
+    setIsModalOpen(true); 
+    setCurrentCategory(null); 
   };
 
   return (
-    <div className={styles.tablesContainer}>
-      <input 
-        type="number" 
-        value={tableNumber} 
-        onChange={(e) => setTableNumber(e.target.value)}
-        placeholder="Numéro de table"
-      />
-      <button onClick={openTable}>Ouvrir Table</button>
-
-      <div className={styles.tableList}>
-        {tables.map((table) => (
-          <div key={table} className={styles.table}>
-            Table {table}
-            <button onClick={() => removeTable(table)}>✖</button>
-          </div>
-        ))}
+    <div className={styles.table}>
+      <div className={styles.panneau}>
+        {tables
+          .sort((a, b) => a - b)  
+          .map((table, index) => (
+            <div 
+              key={index} 
+              className={styles.tableItem} 
+              onClick={() => openModal(table)} 
+            >
+              Table {table}
+            </div>
+          ))
+        }
       </div>
+      {isModalOpen && selectedTable !== null && (
+        <TableModal 
+          selectedTable = {selectedTable}
+          setIsModalOpen={setIsModalOpen} 
+        />
+      )}
     </div>
   );
 }

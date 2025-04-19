@@ -62,26 +62,26 @@
     cursor: pointer;
     font-size: 0.7em;
     margin: 5px auto
-  }
+}
 
-  .paramsButton {
+.paramsButton {
     color: black;
     background-color: #ffffff;
-  }
+}
 
-  .paramsButton:hover {
+.paramsButton:hover {
     color: black;
     background-color: #dddddd;
-  }
+}
   
-  .logoutButton {
+.logoutButton {
     color: white;
     background-color: #d9534f;
-  }
+}
   
-  .logoutButton:hover {
+.logoutButton:hover {
     background-color: #c9302c;
-  }
+}
 
 .dropdownMenu {
     position : absolute;
@@ -125,9 +125,12 @@
     flex-direction: column; 
 }
 
+.errorMessage {
+    color: red
+}
 
 @media (max-width: 600px) {
     .container {
       height: 10dvh;
     }
-  }
+}

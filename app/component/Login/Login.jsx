@@ -47,8 +47,8 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button type="submit" className={styles.btn}>Se connecter</button>
-      </form>
-      {message && <p>{message}</p>}
+        {message && <p className={styles.error}>{message}</p>}
+      </form>      
     </div>
   );
 }

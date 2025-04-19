@@ -6,7 +6,7 @@
 }
 
 .main {
-  flex: 0 0 30%; /* 30% de la hauteur totale */
+  flex: 0 0 30%; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,22 +14,13 @@
 }
 
 .content {
-  flex: 1; /* prend tout l’espace restant */
-  overflow: hidden; /* évite tout scroll inutile */
+  flex: 1; 
+  overflow: hidden; 
   background-color: aliceblue;
 }
 
-.footer {
-  flex: 0 0 10%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgb(29, 85, 85);
-  color: white;
-  font-weight: bold;
-}
-
 .span {
+  margin-left: 4px;
   font-style: italic;
   color: red;
 }
@@ -45,16 +36,15 @@
   background-color: rgb(29, 85, 85);
 }
 
-.link {
+.link, .p {
+  margin: 4px;
   width: 100%;
-  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
-
-/* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
- 
-
   a.secondary:hover {
     background: var(--button-secondary-hover);
     border-color: transparent;
@@ -71,4 +61,3 @@
     height: 100dvh;
   }
 }
-

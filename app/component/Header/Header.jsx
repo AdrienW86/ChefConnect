@@ -1,44 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useUser } from "@/app/Context/UserContext"; // Importer le contexte
 import Image from "next/image";
 import styles from "./header.module.css";
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
+  const { user, loading } = useUser(); 
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
-  const [loading, setLoading] = useState(true);  
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const res = await fetch("/api/auth/verify");  
-        const data = await res.json();
-
-        if (res.ok) {
-          setUser(data.user);  
-          console.log("User récupéré :", data.user);
-        } else {
-          setUser(null);  
-        }
-      } catch (error) {
-        console.error("Erreur lors de la vérification du token", error);
-        setUser(null);
-      } finally {
-        setLoading(false);  
-      }
-    };
-
-    fetchUserData(); 
-  }, []);
-
-  if (loading) {
-    return <p>Chargement...</p>;
-  }
-
-  if (!user) {
-    return <p>Accès refusé. Vous devez être connecté pour accéder à cette page.</p>;
-  }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);

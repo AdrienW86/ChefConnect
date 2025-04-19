@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Sign from "./Sign/page";
-import Login from "./Login/page";
+import Login from "./component/Login/Login";
 import ForgotPassword from "./Forgot/ForgotPassword";
 import styles from "./page.module.css";
 
@@ -18,17 +18,14 @@ export default function Home() {
           priority
         />       
       </main>
-      <section className={styles.content}>
-      
-
-        <Login />
-       
-      </section>
-   
+      <section className={styles.content}>     
+        <Login />       
+      </section>   
       <footer className={styles.footer}>
-        <Link  className={styles.link} href="https://www.code-v.fr" target="_blank" rel="noopener noreferrer">
-          Propulsé par <span className={styles.span}> Codev </span>
+        <Link className={styles.link} href="https://www.code-v.fr" target="_blank" rel="noopener noreferrer">
+          Propulsé par <span className={styles.span}>Codev</span>
         </Link>
+        <p className={styles.p}>&copy; {new Date().getFullYear()} Tous droits réservés.</p>
       </footer>
     </div>
   );
