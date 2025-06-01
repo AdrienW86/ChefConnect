@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import Sign from "./Sign/page";
 import Login from "./component/Login/Login";
+import Signup from "./Sign/page";
 import ForgotPassword from "./Forgot/ForgotPassword";
 import styles from "./page.module.css";
 
@@ -18,7 +18,8 @@ export default function Home() {
           priority
         />       
       </main>
-      <section className={styles.content}>     
+      <section className={styles.content}> 
+      <Signup />
         <Login />       
       </section>   
       <footer className={styles.footer}>

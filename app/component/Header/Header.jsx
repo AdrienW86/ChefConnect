@@ -1,16 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { useUser } from "@/app/Context/UserContext"; // Importer le contexte
+import ParamsCard from "../ParamsCard/ParamsCard";
+import { useUser } from "@/app/Context/UserContext";
 import Image from "next/image";
 import styles from "./header.module.css";
 
 export default function Dashboard() {
   const { user, loading } = useUser(); 
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [isLinkOpen, setIsLinkOpen] = useState(false); 
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+    const toggleLink = () => {
+    setIsLinkOpen(!isLinkOpen);
   };
 
   const handleLogout = async () => {
@@ -55,7 +61,8 @@ export default function Dashboard() {
               <h3 className={styles.h3}> Profil </h3>
                 <a href="#">Consulter</a>
                 <a href="#">Modifier</a>
-                <a href="#">Editer la carte</a>
+                 <button className={styles.paramsButton} onClick={toggleLink}> Editer la carte
+                  </button>
             </div>   
             <div className={styles.profil}>
               <h3 className={styles.h3}> Recettes </h3>
@@ -71,6 +78,8 @@ export default function Dashboard() {
           </section>
         )}
       </div>
+      {isLinkOpen && <ParamsCard onClose={toggleLink} />}
+
     </header>      
   );
 }

@@ -1,65 +1,31 @@
 "use client"
 
 import React, { useEffect, useState } from "react";
+import { useSocket } from "@/app/Context/SocketContext";
 import Tables from '../Tables/Tables';
-import styles from './aside.module.css'
+import styles from './aside.module.css';
 
 export default function Main({ user }) {
+  const socket = useSocket();
   const [session, setSession] = useState(null);
   const [tables, setTables] = useState([]);
   const [tableNumber, setTableNumber] = useState("");
 
   useEffect(() => {
-    if (user?.userId) {
-      startSession(user.userId);
-    }
-  }, [user?.userId]);
+    if (!socket) return;
 
-  const startSession = async (userId) => {
-    try {
-      const response = await fetch("/api/start-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId, session: session }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la mise à jour de la session");
+    // Écouter l'événement d'ouverture de table
+    socket.on('tableOuverte', (tableId) => {
+      if (!tables.includes(tableId)) {
+        setTables(prevTables => [...prevTables, tableId]);
       }
+    });
 
-      console.log("Session démarrée avec succès");
-      setSession({ userId, tables: [] });
-    } catch (error) {
-      console.error("Erreur :", error);
-    }
-  };
-
-  const updateUserSession = async () => {
-    if (!user || !user.userId || !session) {
-      console.error("Utilisateur ou session non définis");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/update-session", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: user.userId, session }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la mise à jour de la session");
-      }
-
-      console.log("Session mise à jour avec succès !");
-    } catch (error) {
-      console.error("Erreur :", error);
-    }
-  };
+    // Nettoyer l'écouteur lors du démontage du composant
+    return () => {
+      socket.off('tableOuverte');
+    };
+  }, [socket, tables]);
 
   const openTable = () => {
     const num = parseInt(tableNumber, 10);
@@ -81,6 +47,11 @@ export default function Main({ user }) {
       ...prevSession,
       tables: updatedTables
     }));
+
+    // Émettre l'événement au serveur pour informer les autres clients
+    if (socket) {
+      socket.emit('ouvrirTable', num);
+    }
 
     console.log(updatedTables);
   };
@@ -118,7 +89,6 @@ export default function Main({ user }) {
       <div className={styles.aside}>
         <button
           className={styles.startBtn}
-          onClick={() => startSession(user.userId)}
         >
           Démarrer session
         </button>
@@ -143,7 +113,6 @@ export default function Main({ user }) {
         </button>
         <button
           className={styles.mainBtn}
-          onClick={updateUserSession}
         >
           Sauvegarder Session
         </button>
@@ -154,7 +123,6 @@ export default function Main({ user }) {
         </button>
         <button
           className={styles.stopBtn}
-          onClick={() => updateUserSession(user.userId)}
         >
           Fermer session
         </button>

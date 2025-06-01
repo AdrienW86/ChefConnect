@@ -145,7 +145,7 @@ export default function Aside({user}) {
             className={styles.startBtn} 
             onClick={()=>startSession(user.userId)}
         > 
-            Démarrer session
+            Démarrer service
         </button>
         <input 
             type="number" 
