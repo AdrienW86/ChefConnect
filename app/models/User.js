@@ -19,13 +19,14 @@ const SessionSchema = new mongoose.Schema({
 // Schéma de la catégorie intégrée
 const CategorySchema = new mongoose.Schema({
   name: { type: String, required: true },
-  products: [
-    {
-      name: { type: String, required: true },
-      price: { type: Number, required: true, get: v => v.toFixed(2), set: v => parseFloat(v.toFixed(2)) },
-      tva: { type: Number, required: true, get: v => v.toFixed(2), set: v => parseFloat(v.toFixed(2)) }, // ajout de TVA
-    }
-  ],
+ products: [
+  {
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    tva: { type: Number, required: true },
+  }
+]
+,
   createdAt: { type: Date, default: Date.now },
 });
 

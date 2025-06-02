@@ -41,7 +41,7 @@
     width: 200px;
 }
 
-.catBtn {
+.catBtnRed, .catBtnGreen, .catBtnWhite {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -49,7 +49,23 @@
     width: 120px;
     padding: 10px;
     margin: 10px;
+    border-radius: 8px;;
+    border: 0px;
+    color: white;
     font-size: 1.1rem;
+}
+
+.catBtnGreen {
+    background-color: green;
+}
+
+.catBtnRed {
+    background-color: red;
+}
+
+.catBtnWhite {
+    color: black;
+    background-color: white;
 }
 
 .closeButton {
@@ -95,9 +111,19 @@
     margin: 20px 0;
 }
 
-.modifyBtn {
+.modifyBtnGreen, .modifyBtnRed {
     padding: 8px;
     width: 150px;
-    margin: 10px auto
+    margin: 10px auto;
+    color: white;
+    border: 0px;
+    border-radius: 8px;
 }
 
+.modifyBtnGreen {
+    background-color: green;
+}
+
+.modifyBtnRed {
+    background-color: red;
+}

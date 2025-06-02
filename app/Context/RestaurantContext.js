@@ -8,42 +8,31 @@ const RestaurantContext = createContext();
 export function RestaurantProvider({ children }) {
   const [orders, setOrders] = useState({});
 
-  const addItemToOrder = (item, tableNumber) => {
-    setOrders(prevOrders => {
-      const currentOrders = { ...prevOrders };
-      const tableOrders = currentOrders[tableNumber] || [];
-  
-      // Affiche les commandes actuelles pour la table
-      console.log("Current orders for table", tableNumber, tableOrders);
-  
-      // Cherche si l'item est déjà présent dans les commandes
-      const existingItem = tableOrders.find(order => order.name === item.name && order.status === "en cours");
-  
-      if (existingItem) {
-        // Si l'item existe déjà, log et augmente la quantité
-        console.log(`Item ${item.name} found, increasing quantity.`);
-        existingItem.quantity += 1;
-      } else {
-        // Sinon, ajout de l'item
-        console.log(`Adding item ${item.name} to orders.`);
-        tableOrders.push({
-          name: item.name,
-          price: item.price,
-          quantity: 1,
-          status: "en cours" // Définir comme "en cours" par défaut
-        });
-      }
-  
-      // Mise à jour de l'état avec les nouvelles commandes pour la table
-      currentOrders[tableNumber] = tableOrders;
-      console.log("Updated orders for table", tableNumber, currentOrders[tableNumber]);
-  
-      return currentOrders; // Retourne les commandes mises à jour
-    });
-  };
-  
-  
-  
+const addItemToOrder = (item, tableNumber) => {
+  setOrders(prevOrders => {
+    const currentOrders = { ...prevOrders };
+    const tableOrders = currentOrders[tableNumber] ? [...currentOrders[tableNumber]] : [];
+
+    const existingIndex = tableOrders.findIndex(order => order.name === item.name && order.status === "en cours");
+    if (existingIndex !== -1) {
+      // Créer une nouvelle copie de l’item modifié
+      const updatedItem = { ...tableOrders[existingIndex], quantity: tableOrders[existingIndex].quantity + 1 };
+      tableOrders[existingIndex] = updatedItem;
+    } else {
+      tableOrders.push({
+        id: Date.now(),  // ou uuid
+        name: item.name,
+        price: item.price,
+        quantity: 1,
+        status: "en cours",
+      });
+    }
+
+    currentOrders[tableNumber] = tableOrders;
+    return currentOrders;
+  });
+};
+
 
   const removeItemFromOrder = (item, tableNumber) => {
     setOrders(prevOrders => {

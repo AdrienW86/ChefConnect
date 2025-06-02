@@ -4,11 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function PUT(request, { params }) {
   const { id } = params; // id de la catégorie à modifier
-
+console.log("ID catégorie reçu :", id);
   try {
      await connectToDatabase();
 
     const body = await request.json();
+      console.log("Données reçues :", body);
     const { name, email } = body; // on récupère le nouveau nom + email utilisateur
 
     if (!email) return NextResponse.json({ error: "Email requis" }, { status: 400 });

@@ -113,80 +113,121 @@ const handleDelete = async (id) => {
 };
 
 
-
   // Gestion produits (passée au composant ProductManager)
-  const addProduct = async (product) => {
-    if (!product.name.trim() || product.price === undefined || isNaN(product.price))
-      return;
-    if (!selectedCategory) return;
+ async function addProduct(product) {
+  if (!selectedCategoryId) {
+    console.error("Aucune catégorie sélectionnée");
+    return;
+  }
+  try {
+    const res = await fetch(`/api/categories/${selectedCategoryId}/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: user.email,  // l'email de l'utilisateur connecté
+        name: product.name,
+        price: product.price,
+        tva: product.tva ?? 0,
+      }),
+    });
 
-    try {
-      const updatedProducts = [...selectedCategory.products, product];
-      const res = await fetch(`/api/categories/${selectedCategoryId}/products`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ products: updatedProducts }),
-      });
-      if (!res.ok) throw new Error("Erreur ajout produit");
-      const updatedCat = await res.json();
-      setCategories(
-        categories.map((cat) =>
-          cat._id === selectedCategoryId ? updatedCat : cat
-        )
-      );
-    } catch (err) {
-      console.error(err);
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Erreur inconnue");
     }
-  };
 
-  const deleteProduct = async (index) => {
-    if (!selectedCategory) return;
-    try {
-      const updatedProducts = selectedCategory.products.filter(
-        (_, i) => i !== index
-      );
-      const res = await fetch(`/api/categories/${selectedCategoryId}/products`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ products: updatedProducts }),
-      });
-      if (!res.ok) throw new Error("Erreur suppression produit");
-      const updatedCat = await res.json();
-      setCategories(
-        categories.map((cat) =>
-          cat._id === selectedCategoryId ? updatedCat : cat
-        )
-      );
-    } catch (err) {
-      console.error(err);
+    const data = await res.json();
+
+    // Met à jour la catégorie en local (à adapter selon ta réponse API)
+    setCategories(categories.map(cat =>
+      cat._id === selectedCategoryId ? data : cat
+    ));
+  } catch (error) {
+    console.error("Erreur addProduct :", error.message);
+  }
+}
+
+  // Dans ParamsCard.js (ou ProductManager.js), modifie deleteProduct et editProduct :
+
+// Suppression produit
+const deleteProduct = async (categoryId, productId) => {
+  if (!categoryId) return;
+  if (!confirm("Supprimer ce produit ?")) return;
+
+  try {
+    const res = await fetch(`/api/categories/${categoryId}/products/${productId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: user.email }),
+    });
+
+    if (!res.ok) {
+      let errorMsg = "Erreur suppression produit";
+      try {
+        const data = await res.json();
+        if (data.error) errorMsg = data.error;
+      } catch {
+        errorMsg = await res.text();
+      }
+      throw new Error(errorMsg);
     }
-  };
 
-  const editProduct = async (index, newProduct) => {
-    if (!newProduct.name.trim() || newProduct.price === undefined || isNaN(newProduct.price))
-      return;
-    if (!selectedCategory) return;
+    setCategories(categories.map(cat => {
+      if (cat._id === categoryId) {
+        return {
+          ...cat,
+          products: cat.products.filter(p => p._id !== productId)
+        };
+      }
+      return cat;
+    }));
 
-    try {
-      const updatedProducts = selectedCategory.products.map((prod, i) =>
-        i === index ? newProduct : prod
-      );
-      const res = await fetch(`/api/categories/${selectedCategoryId}/products`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ products: updatedProducts }),
-      });
-      if (!res.ok) throw new Error("Erreur modification produit");
-      const updatedCat = await res.json();
-      setCategories(
-        categories.map((cat) =>
-          cat._id === selectedCategoryId ? updatedCat : cat
-        )
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
+
+
+// Modification produit
+const editProduct = async (productId, newProduct) => {
+  if (!newProduct.name.trim() || newProduct.price === undefined || isNaN(newProduct.price))
+    return;
+  if (!selectedCategory) return;
+
+  try {
+    const res = await fetch(`/api/categories/${selectedCategoryId}/products/${productId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: user.email,
+        name: newProduct.name.trim(),
+        price: newProduct.price,
+        tva: newProduct.tva ?? 0,
+      }),
+    });
+    if (!res.ok) throw new Error("Erreur modification produit");
+
+    const updatedProduct = await res.json();
+
+    // Mettre à jour localement le produit modifié
+    setCategories(categories.map(cat => {
+      if (cat._id === selectedCategoryId) {
+        return {
+          ...cat,
+          products: cat.products.map(p => p._id === productId ? updatedProduct : p),
+        };
+      }
+      return cat;
+    }));
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   const closeProductModal = () => {
     setSelectedCategoryId(null);
@@ -228,13 +269,13 @@ const handleDelete = async (id) => {
                       onChange={(e) => setEditedName(e.target.value)}
                     />
                     <button
-                      className={styles.modifyBtn}
+                      className={styles.modifyBtnGreen}
                       onClick={() => handleEdit(cat._id)}
                     >
                       Enregistrer
                     </button>
                     <button
-                      className={styles.modifyBtn}
+                      className={styles.modifyBtnRed}
                       onClick={() => setEditingId(null)}
                     >
                       Annuler
@@ -244,7 +285,7 @@ const handleDelete = async (id) => {
                   <section className={styles.card}>
                     <h3 className={styles.h3}>{cat.name}</h3>
                     <button
-                      className={styles.catBtn}
+                      className={styles.catBtnGreen}
                       onClick={() => {
                         setEditingId(cat._id);
                         setEditedName(cat.name);
@@ -253,13 +294,13 @@ const handleDelete = async (id) => {
                       Modifier
                     </button>
                     <button
-                      className={styles.catBtn}
+                      className={styles.catBtnRed}
                       onClick={() => handleDelete(cat._id)}
                     >
                       Supprimer
                     </button>
                     <button
-                      className={styles.catBtn}
+                      className={styles.catBtnWhite}
                       onClick={() => setSelectedCategoryId(cat._id)}
                     >
                       Voir les produits
@@ -271,13 +312,14 @@ const handleDelete = async (id) => {
           </ul>
 
           {selectedCategory && (
-            <ProductManager
-              category={selectedCategory}
-              onClose={closeProductModal}
-              onAddProduct={addProduct}
-              onDeleteProduct={deleteProduct}
-              onEditProduct={editProduct}
-            />
+          <ProductManager
+  category={selectedCategory}
+  onClose={closeProductModal}
+  onAddProduct={addProduct}
+  onDeleteProduct={deleteProduct} // On passe la fonction, pas l'appel
+  onEditProduct={editProduct}
+/>
+
           )}
         </>
       )}
