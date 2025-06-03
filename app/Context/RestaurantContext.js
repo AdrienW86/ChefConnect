@@ -10,7 +10,6 @@ export function RestaurantProvider({ children }) {
   const [loading, setLoading] = useState(false);
 
   const fetchOrdersForTable = async (tableNumber, userId) => {
-    console.log(userId)
     setLoading(true);
     try {
       const res = await fetch(`/api/orders/${tableNumber}?userId=${encodeURIComponent(userId)}`);
@@ -47,26 +46,28 @@ export function RestaurantProvider({ children }) {
     }
   };
 
-  const removeItemFromOrder = async (item, tableNumber, userId) => {
-    try {
-      const res = await fetch(`/api/orders/${tableNumber}/remove-item`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item, userId }),
-      });
-      if (!res.ok) throw new Error("Erreur suppression commande");
-      const data = await res.json();
+const removeItemFromOrder = async (item, tableNumber, userId) => {
+   console.log(item.name)
+    console.log(userId)
+  try {
+    const res = await fetch(
+      `/api/orders/${tableNumber}/${encodeURIComponent(item.name)}?userId=${userId}`,
+      { method: "DELETE" }
+    );
 
-      setOrders((prev) => {
-        const tableOrders = prev[tableNumber] || [];
-        // Remplacer la commande mise à jour
-        const others = tableOrders.filter((o) => o._id !== data.order._id);
-        return { ...prev, [tableNumber]: [...others, data.order] };
-      });
-    } catch (error) {
-      console.error("Erreur removeItemFromOrder:", error);
-    }
-  };
+    if (!res.ok) throw new Error("Erreur suppression commande");
+    const data = await res.json();
+
+    setOrders((prev) => {
+      const tableOrders = prev[tableNumber] || [];
+      const others = tableOrders.filter((o) => o._id !== data.order._id);
+      return { ...prev, [tableNumber]: [...others, data.order] };
+    });
+  } catch (error) {
+    console.error("Erreur removeItemFromOrder:", error);
+  }
+};
+
 
   const markAsServed = async (item, tableNumber, userId) => {
     try {

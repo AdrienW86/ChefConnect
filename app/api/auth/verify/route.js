@@ -13,7 +13,7 @@ export async function GET(req) {
 
     // Vérification du token
     const user = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Utilisateur vérifié :", user);  // Pour voir l'utilisateur décodé
+    // console.log("Utilisateur vérifié :", user);  // Pour voir l'utilisateur décodé
 
     if (!user) {
       return NextResponse.json({ message: "Token invalide" }, { status: 401 });

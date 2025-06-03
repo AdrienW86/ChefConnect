@@ -42,18 +42,9 @@ export async function GET(req, context) {
 
 export async function POST(req, context) {
       await connectToDatabase();
-   const params = await context.params; 
+  const params = await context.params; 
   const tableNumber = Number(params.tableNumber);
- const { item, userId } = await req.json();
-
-
-
-console.log("params:", context.params);
-console.log("tableNumber:", tableNumber);
-console.log("item:", item);
-console.log("userId:", userId);
-
- 
+  const { item, userId } = await req.json();
 
   if (!item || !userId || !tableNumber) {
     return new Response(JSON.stringify({ message: 'Paramètres manquants' }), { status: 400 });
@@ -96,4 +87,3 @@ console.log("userId:", userId);
     return new Response(JSON.stringify({ message: 'Erreur serveur' }), { status: 500 });
   }
 }
-

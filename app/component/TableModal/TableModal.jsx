@@ -27,7 +27,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
         if (!res.ok) throw new Error("Erreur de récupération catégories");
         const data = await res.json();
         setCategories(data.categories || []);
-        console.log("Catégories chargées:", data.categories);
+        // console.log("Catégories chargées:", data.categories);
       } catch (err) {
         console.error(err);
       }
@@ -37,13 +37,13 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
 
   useEffect(() => {
     if (!loading && user && selectedTable) {
-      console.log(user.userId)
+      // console.log(user.userId)
       const fetchOrders = async () => {
         try {
           const res = await fetch(`/api/orders/${selectedTable}?userId=${encodeURIComponent(user.userId ?? user._id)}`);
           if (!res.ok) throw new Error("Erreur récupération commandes");
           const data = await res.json();
-          console.log("Commandes reçues :", data.orders);
+          // console.log("Commandes reçues :", data.orders);
           setOrdersFromApi(data.orders);
         } catch (err) {
           console.error(err);
@@ -133,7 +133,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                   <div key={`en-cours-${item.name}-${index}`} className={styles.itemCommande}>
                     <button
                       className={styles.btnDelete}
-                      onClick={() => removeItemFromOrder(item, selectedTable)}
+                      onClick={() => removeItemFromOrder(item, selectedTable, user.userId)}
                     >
                       x
                     </button>
@@ -216,4 +216,3 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     </>
   );
 }
-
