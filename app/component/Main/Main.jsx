@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react";
+
 import { useSocket } from "@/app/Context/SocketContext";
 import Tables from '../Tables/Tables';
 import styles from './aside.module.css';
@@ -9,23 +10,24 @@ export default function Main({ user }) {
   const socket = useSocket();
   const [session, setSession] = useState(null);
   const [tables, setTables] = useState([]);
+  const [selectedTable, setSelectedTable] = useState(null);
   const [tableNumber, setTableNumber] = useState("");
 
-  useEffect(() => {
-    if (!socket) return;
+useEffect(() => {
+  if (!user?.userId) return;
 
-    // Écouter l'événement d'ouverture de table
-    socket.on('tableOuverte', (tableId) => {
-      if (!tables.includes(tableId)) {
-        setTables(prevTables => [...prevTables, tableId]);
+  fetch(`/api/orders?userId=${user.userId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.tables) {
+        setTables(data.tables);
+        setSession(prev => ({ ...prev, tables: data.tables }));
       }
+    })
+    .catch(err => {
+      console.error("Erreur fetch tables :", err);
     });
-
-    // Nettoyer l'écouteur lors du démontage du composant
-    return () => {
-      socket.off('tableOuverte');
-    };
-  }, [socket, tables]);
+}, [user]);
 
   const openTable = () => {
     const num = parseInt(tableNumber, 10);
@@ -112,22 +114,16 @@ export default function Main({ user }) {
           Annuler table
         </button>
         <button
-          className={styles.mainBtn}
-        >
-          Sauvegarder Session
-        </button>
-        <button
-          className={styles.mainBtn}
-        >
-          Clôturer table
-        </button>
-        <button
           className={styles.stopBtn}
         >
           Fermer session
         </button>
       </div>
-      <Tables tables={tables} />
+      <Tables 
+        tables={tables} 
+        selectedTable={selectedTable}
+        setSelectedTable={setSelectedTable}
+      />
     </>
   );
 }

@@ -2,10 +2,10 @@ import { useState } from "react";
 import TableModal from "../TableModal/TableModal";
 import styles from "./tables.module.css";
 
-export default function Tables({ tables }) {
+export default function Tables({ tables, selectedTable, setSelectedTable }) {
 
   const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [selectedTable, setSelectedTable] = useState(null); 
+ 
   const [currentCategory, setCurrentCategory] = useState(null); 
 
   const openModal = (table) => {

@@ -40,9 +40,39 @@ const UserSchema = new mongoose.Schema({
   session: { type: SessionSchema, default: {} },
   recipe: { type: Array, default: [] },
   menu: { type: Array, default: [] },
-  categories: { type: [CategorySchema], default: [] }, // ✅ ici !
-  createdAt: { type: Date, default: Date.now },
+  categories: { type: [CategorySchema], default: [] }, 
+   orders: {
+    type: [
+      {
+        tableNumber: { type: Number, required: true },
+        items: [
+          {
+            name: { type: String, required: true },
+            price: { type: Number, required: true },
+            quantity: { type: Number, required: true },
+            tva: { type: Number, required: true }
+          }
+        ],
+        total: { type: Number, required: true },
+        paymentMethod: {
+          type: String,
+          enum: ["espèces", "carte", "chèque", "ticket"],
+          required: true
+        },
+        status: {
+          type: String,
+          enum: ["en cours", "payée"],
+          default: "en cours"
+        },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
+    default: []
+  },
+
+  createdAt: { type: Date, default: Date.now }
 });
+
 
 // Hashage du mot de passe avant sauvegarde
 UserSchema.pre("save", async function (next) {

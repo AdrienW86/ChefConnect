@@ -83,7 +83,6 @@ const handleDelete = async (id) => {
   }
 };
 
-
  const handleEdit = async (id) => {
   if (!editedName.trim()) return alert("Le nom de la catégorie est requis");
 
@@ -111,7 +110,6 @@ const handleDelete = async (id) => {
     console.error(err);
   }
 };
-
 
   // Gestion produits (passée au composant ProductManager)
  async function addProduct(product) {
@@ -146,8 +144,6 @@ const handleDelete = async (id) => {
     console.error("Erreur addProduct :", error.message);
   }
 }
-
-  // Dans ParamsCard.js (ou ProductManager.js), modifie deleteProduct et editProduct :
 
 // Suppression produit
 const deleteProduct = async (categoryId, productId) => {
@@ -189,7 +185,6 @@ const deleteProduct = async (categoryId, productId) => {
     alert(err.message);
   }
 };
-
 
 // Modification produit
 const editProduct = async (productId, newProduct) => {
@@ -310,16 +305,14 @@ const editProduct = async (productId, newProduct) => {
               </li>
             ))}
           </ul>
-
           {selectedCategory && (
-          <ProductManager
-  category={selectedCategory}
-  onClose={closeProductModal}
-  onAddProduct={addProduct}
-  onDeleteProduct={deleteProduct} // On passe la fonction, pas l'appel
-  onEditProduct={editProduct}
-/>
-
+            <ProductManager
+              category={selectedCategory}
+              onClose={closeProductModal}
+              onAddProduct={addProduct}
+              onDeleteProduct={deleteProduct}
+              onEditProduct={editProduct}
+            />
           )}
         </>
       )}

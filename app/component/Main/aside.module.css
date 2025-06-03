@@ -10,7 +10,28 @@
     width: 90%;
     height: 40px;
     padding: 5px;
-    font-size: 0.7em;
+    font-size: 1em;
+    font-weight: bold;
+    margin: 10px 5%;
+    transition: .4s ease-in-out;
+    border: 2px solid black;
+}
+
+.startBtn {
+    color: white;
+    background-color: green;
+}
+
+.stopBtn {
+    color: white;
+    background-color: red;
+}
+
+.inputTable {
+    width: 90%;
+    height: 40px;
+    padding: 5px;
+    font-size: 1em;
     font-weight: bold;
     margin: 10px 5%;
     transition: .4s ease-in-out;
