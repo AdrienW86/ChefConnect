@@ -9,7 +9,8 @@ import styles from "./tableModal.module.css";
 export default function TableModal({ selectedTable, setIsModalOpen }) {
   const { user, loading } = useUser();
   const {
-   addItemToOrder,
+    orders, // <-- récupération des commandes dans le contexte
+    addItemToOrder,
     removeItemFromOrder,
     markAsServed,
   } = useRestaurant();
@@ -17,6 +18,8 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   const [categories, setCategories] = useState([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [currentCategory, setCurrentCategory] = useState(null);
+
+  // garde l’état local pour fetch initial ou resynchro côté serveur
   const [ordersFromApi, setOrdersFromApi] = useState([]);
 
   useEffect(() => {
@@ -27,7 +30,6 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
         if (!res.ok) throw new Error("Erreur de récupération catégories");
         const data = await res.json();
         setCategories(data.categories || []);
-        // console.log("Catégories chargées:", data.categories);
       } catch (err) {
         console.error(err);
       }
@@ -37,13 +39,11 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
 
   useEffect(() => {
     if (!loading && user && selectedTable) {
-      // console.log(user.userId)
       const fetchOrders = async () => {
         try {
           const res = await fetch(`/api/orders/${selectedTable}?userId=${encodeURIComponent(user.userId ?? user._id)}`);
           if (!res.ok) throw new Error("Erreur récupération commandes");
           const data = await res.json();
-          // console.log("Commandes reçues :", data.orders);
           setOrdersFromApi(data.orders);
         } catch (err) {
           console.error(err);
@@ -53,12 +53,16 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     }
   }, [selectedTable, user, loading]);
 
-  const mergedOrders = (status) => {
-    if (!ordersFromApi || ordersFromApi.length === 0) return [];
+  // On récupère les commandes en direct depuis le contexte
+  // On priorise le contexte pour un affichage réactif
+  const currentOrders = orders[selectedTable] && orders[selectedTable].length > 0
+    ? orders[selectedTable]
+    : ordersFromApi;
 
-    const filteredOrders = ordersFromApi.filter(
-      (order) => order.status === status && order.tableNumber === selectedTable
-    );
+  const mergedOrders = (status) => {
+    if (!currentOrders || currentOrders.length === 0) return [];
+
+    const filteredOrders = currentOrders.filter(order => order.status === status);
 
     if (filteredOrders.length === 0) return [];
 
@@ -79,9 +83,9 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   };
 
   const calculateTotalTTC = () => {
-    if (!ordersFromApi || ordersFromApi.length === 0) return 0;
+    if (!currentOrders || currentOrders.length === 0) return 0;
 
-    const ordersForTable = ordersFromApi.filter(order => order.tableNumber === selectedTable);
+    const ordersForTable = currentOrders.filter(order => order.tableNumber === selectedTable);
 
     let total = 0;
 
@@ -91,28 +95,54 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
       });
     });
 
-    return total.toFixed(2);
+    return total;
   };
 
-  const calculateTotalTVA = () => {
-    if (!ordersFromApi || ordersFromApi.length === 0) return 0;
+  const calculateTVAAndHT = () => {
+    if (!currentOrders || currentOrders.length === 0) {
+      return { tvaDetails: {}, totalTVA: 0, totalHT: 0 };
+    }
 
-    const ordersForTable = ordersFromApi.filter(order => order.tableNumber === selectedTable);
+    const ordersForTable = currentOrders.filter(order => order.tableNumber === selectedTable);
+
+    const tvaByRate = {};
     let totalTVA = 0;
+    let totalHT = 0;
 
     ordersForTable.forEach(order => {
       order.items.forEach(item => {
-        const tvaPart = item.price * item.quantity * (item.tva / (100 + item.tva));
+        const taux = item.tva;
+        const tvaPart = item.price * item.quantity * (taux / (100 + taux));
         totalTVA += tvaPart;
+
+        const htPart = item.price * item.quantity - tvaPart;
+        totalHT += htPart;
+
+        if (tvaByRate[taux]) {
+          tvaByRate[taux] += tvaPart;
+        } else {
+          tvaByRate[taux] = tvaPart;
+        }
       });
     });
 
-    return totalTVA.toFixed(2);
+    Object.keys(tvaByRate).forEach(rate => {
+      tvaByRate[rate] = tvaByRate[rate].toFixed(2);
+    });
+
+    return {
+      tvaDetails: tvaByRate,
+      totalTVA: totalTVA.toFixed(2),
+      totalHT: totalHT.toFixed(2),
+    };
   };
 
   if (loading) return <p>Chargement...</p>;
   if (!user) return <p>Utilisateur non connecté</p>;
   if (!selectedTable) return <p>Aucune table sélectionnée</p>;
+
+  const totalTTC = calculateTotalTTC();
+  const { tvaDetails, totalTVA, totalHT } = calculateTVAAndHT();
 
   return (
     <>
@@ -123,67 +153,78 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
           </button>
           <h3 className={styles.tableNumber}>Table {selectedTable}</h3>
 
-          {ordersFromApi.length === 0 && (
+          {currentOrders.length === 0 && (
             <p>Aucune commande pour cette table.</p>
           )}
           <div className={styles.commandeBox}>
             <div className={styles.commande}>
-              {mergedOrders("en cours").map((item, index) => {
-                return (
-                  <div key={`en-cours-${item.name}-${index}`} className={styles.itemCommande}>
-                    <button
-                      className={styles.btnDelete}
-                      onClick={() => removeItemFromOrder(item, selectedTable, user.userId)}
-                    >
-                      x
-                    </button>
-                    <span className={styles.itemName}>
-                      {item.name} (x{item.quantity})
-                    </span>
-                    <span className={styles.itemStatus} style={{ color: "red" }}>
-                      En cours...
-                    </span>
-                    <span className={styles.itemPrice}>
-                      {item.price.toFixed(2)}€ (TVA {item.tva}% incluse)
-                    </span>
-                    <button
-                      className={styles.btnServi}
-                      onClick={() => markAsServed(item, selectedTable)}
-                    >
-                      v
-                    </button>
-                  </div>
-                );
-              })}
-              {mergedOrders("payée").map((item, index) => {
-                return (
-                  <div key={`servi-${item.name}-${index}`} className={styles.itemCommande}>
-                    <span className={styles.itemName}>
-                      {item.name} (x{item.quantity})
-                    </span>
-                    <span className={styles.itemStatus} style={{ color: "green" }}>
-                      Servi
-                    </span>
-                    <button
-                      className={styles.btnDelete}
-                      onClick={() => removeItemFromOrder(item, selectedTable)}
-                    >
-                      x
-                    </button>
-                    <span className={styles.itemPrice}>
-                      {item.price.toFixed(2)}€ (TVA {item.tva}% incluse)
-                    </span>
-                  </div>
-                );
-              })}
+              {mergedOrders("en cours").map((item, index) => (
+                <div key={`en-cours-${item.name}-${index}`} className={styles.itemCommande}>
+                  <button
+                    className={styles.btnDelete}
+                    onClick={() => removeItemFromOrder(item, selectedTable, user.userId)}
+                  >
+                    x
+                  </button>
+                  <span className={styles.itemName}>
+                    {item.name} (x{item.quantity})
+                  </span>
+                  <span className={styles.itemStatus} style={{ color: "red" }}>
+                    En cours...
+                  </span>
+                  <span className={styles.itemPrice}>
+                    {item.price.toFixed(2)}€ (TVA {item.tva}% incluse)
+                  </span>
+                  <button
+                    className={styles.btnServi}
+                    onClick={() => markAsServed(item, selectedTable)}
+                  >
+                    v
+                  </button>
+                </div>
+              ))}
+              {mergedOrders("payée").map((item, index) => (
+                <div key={`servi-${item.name}-${index}`} className={styles.itemCommande}>
+                  <span className={styles.itemName}>
+                    {item.name} (x{item.quantity})
+                  </span>
+                  <span className={styles.itemStatus} style={{ color: "green" }}>
+                    Servi
+                  </span>
+                  <button
+                    className={styles.btnDelete}
+                    onClick={() => removeItemFromOrder(item, selectedTable)}
+                  >
+                    x
+                  </button>
+                  <span className={styles.itemPrice}>
+                    {item.price.toFixed(2)}€ (TVA {item.tva}% incluse)
+                  </span>
+                </div>
+              ))}
+
+              <h3 className={styles.totalHT}>
+                Total HT : <span className={styles.spanTotal}>{totalHT}€</span>
+              </h3>
+
+              <h3 className={styles.totalTVA}>
+                <div className={styles.tvaBreakdown}>
+                  {Object.entries(tvaDetails).map(([rate, amount]) => (
+                    <div key={rate} className={styles.rate}>
+                      TVA {rate}% : <span className={styles.tva}>{amount}€</span>
+                    </div>
+                  ))}
+                </div>
+              </h3>
+              <div className={styles.totalTVA}>
+                Total TVA : <span className={styles.tva}> {totalTVA}€ </span>
+              </div>
+
               <h3 className={styles.total}>
                 <strong>
-                  Total TTC : <span className={styles.spanTotal}>{calculateTotalTTC()}€</span>
+                  Total TTC : <span className={styles.spanTotal}>{totalTTC.toFixed(2)}€</span>
                 </strong>
               </h3>
-              <h4 className={styles.totalTVA}>
-                TVA totale : <span>{calculateTotalTVA()}€</span>
-              </h4>
             </div>
             <div className={styles.boxBtn}>
               {categories.map((category) => (

@@ -1,3 +1,4 @@
+// CategoryModal.jsx
 "use client";
 
 import styles from './categoryModal.module.css';
@@ -5,12 +6,9 @@ import styles from './categoryModal.module.css';
 export default function CategoryModal({ currentCategory, setIsCategoryModalOpen, addItemToOrder }) {
   const products = currentCategory.products || [];
 
-  const closeCategoryModal = () => {
-    setIsCategoryModalOpen(false);
-  };
+  const closeCategoryModal = () => setIsCategoryModalOpen(false);
 
   const handleAddItem = (item) => {
-    console.log(item)
     addItemToOrder(item);
   };
 
