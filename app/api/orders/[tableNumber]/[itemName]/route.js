@@ -2,25 +2,19 @@ import { connectToDatabase } from "@/app/lib/mongodb";
 import User from "@/app/models/User";
 
 export async function DELETE(req, context) {
-  console.log("🔥 DELETE API hit");
+  await connectToDatabase();
 
-  const { params } = context;
+  const params = await context.params; 
   const tableNumber = Number(params.tableNumber);
   const itemName = decodeURIComponent(params.itemName);
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
-
-  console.log("params:", params);
-  console.log("tableNumber:", tableNumber);
-  console.log("item:", itemName);
-  console.log("userId:", userId);
 
   if (!userId || !tableNumber || !itemName) {
     return new Response(JSON.stringify({ message: "Paramètres manquants" }), { status: 400 });
   }
 
   try {
-    await connectToDatabase();
     const user = await User.findById(userId);
     if (!user) {
       return new Response(JSON.stringify({ message: "Utilisateur non trouvé" }), { status: 404 });

@@ -5,7 +5,8 @@
     width: 100%;
     height: 100%;
     display: flex;
-    z-index: 100000;
+    z-index: 100000000;
+    background-color: rgb(51, 51, 51);
 }
 
 .paymentModalContent {  
@@ -13,7 +14,52 @@
     width: 100%;
     top: 0;
     right: 0;
-    background-color: rgb(29, 85, 85);
+    background-color: rgb(51, 51, 51);
+}
+
+.paymentItems { 
+    font-weight: bold;
+    background-color: rgb(250, 250, 250);
+}
+
+.item {
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid black;
+}
+
+.pay {
+   padding: 30px 8px; 
+   background-color: rgb(51, 51, 51);
+} 
+
+.radio {
+    margin-top: 10px;
+}
+
+.label {
+    color: white;
+}
+
+.selection {
+    padding: 8px;
+    background-color: white;
+}
+
+.p {
+    margin: 10px 0
+}
+
+.h4 {
+    text-decoration: underline;
+   margin-bottom: 10px;
+   
+}
+
+.span {
+    font-weight: bold;
+    color: green
 }
 
 .closeBtn {
@@ -32,48 +78,50 @@
 .paiementTitle {
     display: flex;
     justify-content: center;
+    width: 100%;
     padding: 16px;
-    color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
     font-size: 1.5em;
     text-decoration: underline;
     margin-bottom: 50px;
 }
 
-.paymentItems {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.h5 {
+    padding:  16px 8px;
+    text-decoration: underline;
 }
 
-.paymentItem {
-    color: rgb(255, 255, 255);
-    margin-top: 8px;
-    margin-left: 12px;
+.paymentMethods {
+    margin: 50px 0;
+    background-color: white;
+}
+
+.paymentType {
     display: flex;
-    font-weight: bold;
-    border-bottom: 1px solid white;
+    padding: 8px;
+    border-top: 1px solid black;
     justify-content: space-between;
 }
 
-.paymentInput {
-    margin-right: 8px;
-    width: 40px;
+.label2 {
+    position: absolute;
+    right: 8px;
+    justify-content: flex-end;
 }
 
+
 .paymentActions {
-    position: absolute;
-    bottom: 50px;
     display: flex;
     width: 100%;
     justify-content: space-around;
 }
 
 .payFullBtn {
-    padding: 8px;
-    width: 150px;
-}
-
-.paySelectedBtn {
-    padding: 8px;
-    width: 150px;
+    color: white;
+    font-size: 1.3em;
+    background-color: green;
+    border: none;
+    padding: 16px;
+    font-weight: bold;
+    border-radius: 8px;
 }

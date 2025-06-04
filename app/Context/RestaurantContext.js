@@ -5,7 +5,6 @@ import { createContext, useContext, useState } from "react";
 const RestaurantContext = createContext();
 
 export function RestaurantProvider({ children }) {
-  // Structure : orders = { [tableNumber]: [orders] }
   const [orders, setOrders] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -23,32 +22,40 @@ export function RestaurantProvider({ children }) {
     }
   };
 
- const addItemToOrder = async (item, tableNumber, userId) => {
-  // Mise à jour locale immédiate
+  const addItemToOrder = async (item, tableNumber, userId) => {
+    if (!item.quantity || item.quantity <= 0) {
+    item.quantity = 1;
+  }
   setOrders(prev => {
     const tableOrders = prev[tableNumber] || [];
-    // Supposons qu'on a qu'une seule commande "en cours" par table
     let order = tableOrders.find(o => o.status === "en cours");
 
     if (order) {
-      // Met à jour les items dans la commande
-      const existingItem = order.items.find(i => i.name === item.name);
-      if (existingItem) {
-        existingItem.quantity += item.quantity;
+      const updatedItems = [...order.items];
+      const index = updatedItems.findIndex(i => i.name === item.name);
+
+      if (index !== -1) {
+        updatedItems[index] = {
+          ...updatedItems[index],
+          quantity: updatedItems[index].quantity + item.quantity,
+        };
       } else {
-        order.items.push(item);
+        updatedItems.push({ ...item }); // clone de item pour éviter référence directe
       }
-      // Recalcul total localement
-      order.total += item.price * item.quantity;
-      // Replace la commande dans le tableau
+
+      const updatedTotal = updatedItems.reduce(
+        (sum, i) => sum + i.price * i.quantity,
+        0
+      );
+
+      const updatedOrder = { ...order, items: updatedItems, total: updatedTotal };
       const others = tableOrders.filter(o => o._id !== order._id);
-      return { ...prev, [tableNumber]: [...others, order] };
+      return { ...prev, [tableNumber]: [...others, updatedOrder] };
     } else {
-      // Pas de commande existante, création locale simple
       const newOrder = {
-        _id: "temp_" + Date.now(), // ID temporaire
+        _id: "temp_" + Date.now(),
         tableNumber,
-        items: [item],
+        items: [{ ...item }],
         total: item.price * item.quantity,
         status: "en cours",
       };
@@ -56,7 +63,6 @@ export function RestaurantProvider({ children }) {
     }
   });
 
-  // Puis appel au backend pour sauvegarder la modif
   try {
     const res = await fetch(`/api/orders/${tableNumber}`, {
       method: "POST",
@@ -66,60 +72,102 @@ export function RestaurantProvider({ children }) {
     if (!res.ok) throw new Error("Erreur ajout commande");
     const data = await res.json();
 
-    // Corriger la commande locale avec la version du serveur
     setOrders(prev => {
+      if (!data.order || !data.order._id) return prev;
       const tableOrders = prev[tableNumber] || [];
-      const others = tableOrders.filter(o => o._id !== data.order._id && !o._id.startsWith("temp_"));
+      const others = tableOrders.filter(o => o && o._id && o._id !== data.order._id && !o._id.startsWith("temp_"));
       return { ...prev, [tableNumber]: [...others, data.order] };
     });
   } catch (error) {
     console.error("Erreur addItemToOrder:", error);
-    // Ici tu pourrais revenir en arrière sur la modif locale si tu veux (rollback)
   }
 };
 
+  const removeItemFromOrder = async (item, tableNumber, userId) => {
+    setOrders(prev => {
+      const tableOrders = prev[tableNumber] || [];
+      let order = tableOrders.find(o => o.status === "en cours");
+      if (!order) return prev;
 
-const removeItemFromOrder = async (item, tableNumber, userId) => {
-  // Mise à jour locale immédiate
+      const newItems = order.items.filter(i => i.name !== item.name);
+      const newTotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+      if (newItems.length === 0) {
+        // Supprimer la commande si plus d'items
+        const others = tableOrders.filter(o => o._id !== order._id);
+        return { ...prev, [tableNumber]: others };
+      } else {
+        const updatedOrder = { ...order, items: newItems, total: newTotal };
+        const others = tableOrders.filter(o => o._id !== order._id);
+        return { ...prev, [tableNumber]: [...others, updatedOrder] };
+      }
+    });
+
+    try {
+      const res = await fetch(
+        `/api/orders/${tableNumber}/${encodeURIComponent(item.name)}?userId=${encodeURIComponent(userId)}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error("Erreur suppression commande");
+      const data = await res.json();
+
+      setOrders(prev => {
+        if (!data.order || !data.order._id) return prev;
+        const tableOrders = prev[tableNumber] || [];
+        const others = tableOrders.filter(o => o && o._id && o._id !== data.order._id && !o._id.startsWith("temp_"));
+        return { ...prev, [tableNumber]: [...others, data.order] };
+      });
+    } catch (error) {
+      console.error("Erreur removeItemFromOrder:", error);
+    }
+  };
+
+
+ const removeItemsFromOrder = async (itemsToRemove, tableNumber, userId) => {
   setOrders(prev => {
     const tableOrders = prev[tableNumber] || [];
     let order = tableOrders.find(o => o.status === "en cours");
-    if (!order) return prev; // rien à faire si pas de commande en cours
+    if (!order) return prev;
 
-    // Filtrer l'item à retirer
-    const newItems = order.items.filter(i => i.name !== item.name);
-
-    // Calculer le nouveau total
+    const newItems = order.items.filter(
+      i => !itemsToRemove.some(r => r.name === i.name)
+    );
     const newTotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-    const updatedOrder = { ...order, items: newItems, total: newTotal };
-
-    // Remplacer la commande dans la liste
-    const others = tableOrders.filter(o => o._id !== order._id);
-    return { ...prev, [tableNumber]: [...others, updatedOrder] };
+    if (newItems.length === 0) {
+      const others = tableOrders.filter(o => o._id !== order._id);
+      return { ...prev, [tableNumber]: others };
+    } else {
+      const updatedOrder = { ...order, items: newItems, total: newTotal };
+      const others = tableOrders.filter(o => o._id !== order._id);
+      return { ...prev, [tableNumber]: [...others, updatedOrder] };
+    }
   });
 
-  // Appel au backend pour supprimer l'item
   try {
-    const res = await fetch(
-      `/api/orders/${tableNumber}/${encodeURIComponent(item.name)}?userId=${encodeURIComponent(userId)}`,
-      { method: "DELETE" }
-    );
-    if (!res.ok) throw new Error("Erreur suppression commande");
-    const data = await res.json();
-
-    // Corriger la commande locale avec la version serveur
-    setOrders(prev => {
-      const tableOrders = prev[tableNumber] || [];
-      const others = tableOrders.filter(o => o._id !== data.order._id && !o._id.startsWith("temp_"));
-      return { ...prev, [tableNumber]: [...others, data.order] };
+    const res = await fetch(`/api/orders/${tableNumber}/remove`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, items: itemsToRemove }),
     });
-  } catch (error) {
-    console.error("Erreur removeItemFromOrder:", error);
-    // Optionnel: rollback si suppression échoue (ex: recharger commande serveur)
-    // Tu peux appeler fetchOrdersForTable(tableNumber, userId) ici par exemple
+    if (!res.ok) throw new Error("Erreur suppression groupée");
+
+    const data = await res.json();
+    if (data.order) {
+      setOrders(prev => {
+        const tableOrders = prev[tableNumber] || [];
+        const updatedOrders = tableOrders.map(o =>
+          o._id === data.order._id ? data.order : o
+        );
+        return { ...prev, [tableNumber]: updatedOrders };
+      });
+    }
+  } catch (err) {
+    console.error("Erreur bulk remove:", err);
   }
 };
+
+
 
 
   const markAsServed = async (item, tableNumber, userId) => {
@@ -132,10 +180,10 @@ const removeItemFromOrder = async (item, tableNumber, userId) => {
       if (!res.ok) throw new Error("Erreur marquage servi");
       const data = await res.json();
 
-      setOrders((prev) => {
+      setOrders(prev => {
+        if (!data.order || !data.order._id) return prev;
         const tableOrders = prev[tableNumber] || [];
-        // Remplacer la commande mise à jour
-        const others = tableOrders.filter((o) => o._id !== data.order._id);
+        const others = tableOrders.filter(o => o && o._id && o._id !== data.order._id);
         return { ...prev, [tableNumber]: [...others, data.order] };
       });
     } catch (error) {
@@ -148,9 +196,11 @@ const removeItemFromOrder = async (item, tableNumber, userId) => {
       value={{
         orders,
         loading,
+        setOrders,
         fetchOrdersForTable,
         addItemToOrder,
         removeItemFromOrder,
+        removeItemsFromOrder,
         markAsServed,
       }}
     >

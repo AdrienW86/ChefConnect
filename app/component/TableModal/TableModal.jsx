@@ -3,23 +3,26 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@/app/Context/UserContext";
 import { useRestaurant } from "@/app/Context/RestaurantContext";
+import PaymentModal from "../PaymentModal/PaymentModal";
 import CategoryModal from "../CategoryModal/CategoryModal";
 import styles from "./tableModal.module.css";
 
 export default function TableModal({ selectedTable, setIsModalOpen }) {
   const { user, loading } = useUser();
   const {
-    orders, // <-- récupération des commandes dans le contexte
+    orders,
+    setOrders,
     addItemToOrder,
     removeItemFromOrder,
+    removeItemsFromOrder,
     markAsServed,
   } = useRestaurant();
 
   const [categories, setCategories] = useState([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [currentCategory, setCurrentCategory] = useState(null);
-
-  // garde l’état local pour fetch initial ou resynchro côté serveur
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersFromApi, setOrdersFromApi] = useState([]);
 
   useEffect(() => {
@@ -40,6 +43,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   useEffect(() => {
     if (!loading && user && selectedTable) {
       const fetchOrders = async () => {
+        setLoadingOrders(true);
         try {
           const res = await fetch(`/api/orders/${selectedTable}?userId=${encodeURIComponent(user.userId ?? user._id)}`);
           if (!res.ok) throw new Error("Erreur récupération commandes");
@@ -47,14 +51,14 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
           setOrdersFromApi(data.orders);
         } catch (err) {
           console.error(err);
+        } finally {
+          setLoadingOrders(false); 
         }
       };
       fetchOrders();
     }
   }, [selectedTable, user, loading]);
 
-  // On récupère les commandes en direct depuis le contexte
-  // On priorise le contexte pour un affichage réactif
   const currentOrders = orders[selectedTable] && orders[selectedTable].length > 0
     ? orders[selectedTable]
     : ordersFromApi;
@@ -73,9 +77,9 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     allItems.forEach((item) => {
       const existing = merged.find((i) => i.name === item.name);
       if (existing) {
-        existing.quantity += item.quantity;
+        existing.quantity += Number(item.quantity) || 0;
       } else {
-        merged.push({ ...item });
+        merged.push({ ...item, quantity: Number(item.quantity) || 0 });
       }
     });
 
@@ -91,7 +95,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
 
     ordersForTable.forEach(order => {
       order.items.forEach(item => {
-        total += item.price * item.quantity;
+        total += (Number(item.price) || 0) * (Number(item.quantity) || 0);
       });
     });
 
@@ -111,11 +115,12 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
 
     ordersForTable.forEach(order => {
       order.items.forEach(item => {
-        const taux = item.tva;
-        const tvaPart = item.price * item.quantity * (taux / (100 + taux));
+        const taux = Number(item.tva) || 0;
+        const prix = (Number(item.price) || 0) * (Number(item.quantity) || 0);
+        const tvaPart = prix * (taux / (100 + taux));
         totalTVA += tvaPart;
 
-        const htPart = item.price * item.quantity - tvaPart;
+        const htPart = prix - tvaPart;
         totalHT += htPart;
 
         if (tvaByRate[taux]) {
@@ -137,7 +142,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     };
   };
 
-  if (loading) return <p>Chargement...</p>;
+  if (loading || loadingOrders) return <p>Chargement des données...</p>;
   if (!user) return <p>Utilisateur non connecté</p>;
   if (!selectedTable) return <p>Aucune table sélectionnée</p>;
 
@@ -152,9 +157,8 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
             X
           </button>
           <h3 className={styles.tableNumber}>Table {selectedTable}</h3>
-
           {currentOrders.length === 0 && (
-            <p>Aucune commande pour cette table.</p>
+            <p className={styles.not}>Aucune commande pour cette table.</p>
           )}
           <div className={styles.commandeBox}>
             <div className={styles.commande}>
@@ -173,7 +177,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                     En cours...
                   </span>
                   <span className={styles.itemPrice}>
-                    {item.price.toFixed(2)}€ (TVA {item.tva}% incluse)
+                    {Number(item.price).toFixed(2)}€ (TVA {item.tva}% incluse)
                   </span>
                   <button
                     className={styles.btnServi}
@@ -198,15 +202,13 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                     x
                   </button>
                   <span className={styles.itemPrice}>
-                    {item.price.toFixed(2)}€ (TVA {item.tva}% incluse)
+                    {Number(item.price).toFixed(2)}€ (TVA {item.tva}% incluse)
                   </span>
                 </div>
               ))}
-
               <h3 className={styles.totalHT}>
                 Total HT : <span className={styles.spanTotal}>{totalHT}€</span>
               </h3>
-
               <h3 className={styles.totalTVA}>
                 <div className={styles.tvaBreakdown}>
                   {Object.entries(tvaDetails).map(([rate, amount]) => (
@@ -239,11 +241,30 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                   {category.name.toUpperCase()}
                 </button>
               ))}
+              <button
+                className={styles.paymentBtn}
+                onClick={() => setIsPaymentModalOpen(true)}
+              >
+                PAYER
+              </button>
             </div>
           </div>
         </div>
       </div>
-
+      {isPaymentModalOpen && (
+        <PaymentModal
+          user={user}
+          selectedTable={selectedTable}
+          orders={currentOrders}
+          setOrders={setOrders}
+          totalTTC={totalTTC}
+          totalHT={totalHT}
+          totalTVA={totalTVA}
+          tvaDetails={tvaDetails}
+          removeItemsFromOrder={removeItemsFromOrder}
+          setIsPaymentModalOpen={setIsPaymentModalOpen}
+        />
+      )}
       {isCategoryModalOpen && currentCategory && (
         <CategoryModal
           currentCategory={currentCategory}
