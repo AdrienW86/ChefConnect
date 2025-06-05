@@ -5,7 +5,7 @@ import styles from './paymentModal.module.css';
 
 const PAYMENT_METHODS = ['Ticket', 'Espèces', 'CB', 'Chèque'];
 
-export default function PaymentModal({ user, selectedTable, orders, setOrders, setIsPaymentModalOpen }) {
+export default function PaymentModal({ user, selectedTable, orders, setOrders, setIsPaymentModalOpen, removeItemsFromOrder }) {
   const [selectedQuantities, setSelectedQuantities] = useState({});
   const [showReceipt, setShowReceipt] = useState(false);
   const [paidItems, setPaidItems] = useState([]);
@@ -79,118 +79,74 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
     }));
   };
 
+ const processPayment = async (payAllParam) => {
+  setPayAll(payAllParam);
 
+  const itemsToPay = payAllParam
+    ? itemsWithIds
+    : itemsWithIds
+        .filter(item => (selectedQuantities[item.id] || 0) > 0)
+        .map(item => ({
+          ...item,
+          quantity: selectedQuantities[item.id],
+        }));
 
+  const totalToPay = payAllParam ? calculateTotal() : calculateSelectedTotal();
+  const paymentSum = Object.values(paymentAmounts).reduce((a, b) => a + b, 0);
 
-const removeItemsFromOrder = async (itemsToRemove, tableNumber, userId) => {
-  console.log( `${itemsToRemove}`);
- 
-  setOrders(prev => {
-    const tableOrders = prev[tableNumber] || [];
-    let order = tableOrders.find(o => o.status === "en cours");
-    if (!order) return prev;
+  if (paymentSum !== totalToPay) {
+    alert(`Le total des paiements (${paymentSum.toFixed(2)}€) doit être égal au total à payer (${totalToPay.toFixed(2)}€).`);
+    return;
+  }
 
-    const newItems = order.items.filter(
-      i => !itemsToRemove.some(r => r.name === i.name)
-    );
-    const newTotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  setPaidItems(itemsToPay);
+  setShowReceipt(true);
 
-    if (newItems.length === 0) {
-      const others = tableOrders.filter(o => o._id !== order._id);
-      return { ...prev, [tableNumber]: others };
-    } else {
-      const updatedOrder = { ...order, items: newItems, total: newTotal };
-      const others = tableOrders.filter(o => o._id !== order._id);
-      return { ...prev, [tableNumber]: [...others, updatedOrder] };
-    }
-  });
-
-  try {
-    const res = await fetch(`/api/orders/${tableNumber}/remove`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, items: itemsToRemove }),
-    });
-    if (!res.ok) throw new Error("Erreur suppression groupée");
-
-    const data = await res.json();
-    if (data.order) {
-      setOrders(prev => {
-        const tableOrders = prev[tableNumber] || [];
-        const updatedOrders = tableOrders.map(o =>
-          o._id === data.order._id ? data.order : o
-        );
-        return { ...prev, [tableNumber]: updatedOrders };
+  const remainingItems = payAllParam
+    ? []
+    : itemsWithIds.flatMap(item => {
+        const paidQty = selectedQuantities[item.id] || 0;
+        const remainingQty = item.quantity - paidQty;
+        return remainingQty > 0 ? [{ ...item, quantity: remainingQty }] : [];
       });
+
+  const updatedOrders = orders.map(order =>
+    order.tableNumber === selectedTable
+      ? { ...order, items: remainingItems }
+      : order
+  );
+
+  removeItemsFromOrder(itemsToPay, selectedTable, user.userId);
+  setOrders(updatedOrders);
+
+  // 👇 Appel réel à l'API ici
+  try {
+    const response = await fetch("/api/pay", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: user.userId,
+        tableNumber: selectedTable,
+        items: itemsToPay,
+        total: totalToPay,
+        paymentMethods: paymentAmounts
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      console.log("✅ Paiement enregistré avec succès !");
+    } else {
+      console.error("❌ Erreur d'enregistrement :", data.message || data.error);
     }
-  } catch (err) {
-    console.error("Erreur bulk remove:", err);
+  } catch (error) {
+    console.error("❌ Erreur lors de l'appel API :", error);
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const processPayment = (payAllParam) => {
-    setPayAll(payAllParam);
-
-    const itemsToPay = payAllParam
-      ? itemsWithIds
-      : itemsWithIds
-          .filter(item => (selectedQuantities[item.id] || 0) > 0)
-          .map(item => ({
-            ...item,
-            quantity: selectedQuantities[item.id],
-          }));
-
-    const totalToPay = payAllParam ? calculateTotal() : calculateSelectedTotal();
-    const paymentSum = Object.values(paymentAmounts).reduce((a, b) => a + b, 0);
-
-    if (paymentSum !== totalToPay) {
-      alert(`Le total des paiements (${paymentSum.toFixed(2)}€) doit être égal au total à payer (${totalToPay.toFixed(2)}€).`);
-      return;
-    }
-
-    setPaidItems(itemsToPay);
-    setShowReceipt(true);
-
-    const remainingItems = payAllParam
-      ? []
-      : itemsWithIds.flatMap(item => {
-          const paidQty = selectedQuantities[item.id] || 0;
-          const remainingQty = item.quantity - paidQty;
-          return remainingQty > 0 ? [{ ...item, quantity: remainingQty }] : [];
-        });
-
-    const updatedOrders = orders.map(order =>
-      order.tableNumber === selectedTable
-        ? { ...order, items: remainingItems }
-        : order
-    );
-  removeItemsFromOrder (itemsToPay,selectedTable, user.userId)
-
-    setOrders(updatedOrders);
-  };
 
   const printReceipt = () => {
     const printContent = document.getElementById('receipt').innerHTML;
@@ -312,7 +268,6 @@ const removeItemsFromOrder = async (itemsToRemove, tableNumber, userId) => {
                 <div><strong>Total sélectionné : <span className={styles.span}>{calculateSelectedTotal().toFixed(2)} €</span></strong></div>
               </div>
             )}
-
             <div className={styles.paymentMethods}>
               <h4 className={styles.h5}>Répartir le paiement :</h4>
               {PAYMENT_METHODS.map(method => (

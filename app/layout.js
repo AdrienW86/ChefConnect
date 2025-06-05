@@ -1,5 +1,6 @@
-import { UserProvider } from "./Context/UserContext";  // Assume that UserContext is in the context folder
+import { UserProvider } from "./Context/UserContext";
 import { RestaurantProvider } from "./Context/RestaurantContext";
+import { SessionProvider } from "./Context/SessionContext"; // <-- à ajouter ici
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -22,12 +23,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <UserProvider>   {/* Intégration du UserContext */}
-          <RestaurantProvider>  {/* RestaurantContext */}
-            {children}
-          </RestaurantProvider>        
+        <UserProvider>
+          <RestaurantProvider>
+            <SessionProvider> {/* <-- ici, enveloppe les enfants */}
+              {children}
+            </SessionProvider>
+          </RestaurantProvider>
         </UserProvider>
       </body>
     </html>
   );
 }
+

@@ -78,7 +78,6 @@ useEffect(() => {
       const updatedTables = tables.filter(table => table !== num);
       setTables(updatedTables);
 
-      // Mise à jour de la session après annulation
       setSession(prevSession => ({
         ...prevSession,
         tables: updatedTables
@@ -86,14 +85,73 @@ useEffect(() => {
     }
   };
 
+
+  async function startSession(userId) {
+  try {
+    const res = await fetch("/api/reports/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error("Erreur API :", data.error);
+      return;
+    }
+
+    console.log("Session démarrée :", data);
+    setSession(data)
+    // Tu peux maintenant stocker cette session dans le state ou le contexte
+  } catch (error) {
+    console.error("Erreur lors de l'appel API :", error);
+  }
+}
+
+const stopSession = async () => {
+  if (!session) return;
+
+  if (window.confirm("Voulez-vous vraiment fermer la session ?")) {
+    try {
+      const res = await fetch("/api/reports/close", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: session.id }),
+      });
+
+      if (!res.ok) throw new Error("Erreur lors de la fermeture de session");
+
+      // Réinitialisation locale
+      setSession(null);
+      setTables([]);
+      setTableNumber("");
+      setSelectedTable(null);
+
+      // Eventuellement prévenir via socket
+      if (socket) socket.emit("fermerSession", session.id);
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de la fermeture de la session.");
+    }
+  }
+};
+
+
   return (
     <>
       <div className={styles.aside}>
+        {session ? <div className={styles.session}> Session en cours...  </div> : 
         <button
+         onClick={() => startSession(user.userId)}
+
           className={styles.startBtn}
         >
           Démarrer session
         </button>
+}
         <input
           type="number"
           value={tableNumber}
@@ -113,11 +171,15 @@ useEffect(() => {
         >
           Annuler table
         </button>
+        {session ?  
         <button
+           onClick={() => stopSession(user.userId)}
           className={styles.stopBtn}
         >
           Fermer session
-        </button>
+        </button> : null
+        }
+       
       </div>
       <Tables 
         tables={tables} 

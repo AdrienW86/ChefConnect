@@ -1,47 +1,61 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-// Schéma de la session unique
-const SessionSchema = new mongoose.Schema({
-  recipe: {
-    money: { type: Number, default: 0 },
+// --- Schéma du rapport journalier ---
+const DailyReportSchema = new mongoose.Schema({
+  day: { type: Number, required: true }, // Ex: 5
+  totalRevenue: { type: Number, required: true },
+  tva: {
+    tva5_5: { type: Number, default: 0 },
+    tva10: { type: Number, default: 0 },
+    tva20: { type: Number, default: 0 },
+  },
+  payments: {
+    cash: { type: Number, default: 0 },
     card: { type: Number, default: 0 },
     check: { type: Number, default: 0 },
     ticket: { type: Number, default: 0 },
   },
-  date: { type: Date, default: Date.now },
-  tables: { type: Array, default: [] },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-  isActive: { type: Boolean, default: true },
 });
 
-// Schéma de la catégorie intégrée
+// Remplace cette partie dans ton UserSchema :
+
+const YearlyReportSchema = new mongoose.Schema({
+  year: { type: String, required: true },
+  months: {
+    type: Map,
+    of: [DailyReportSchema],
+    default: {}
+  },
+});
+
+
+
+// --- Schéma de catégorie ---
 const CategorySchema = new mongoose.Schema({
   name: { type: String, required: true },
- products: [
-  {
-    name: { type: String, required: true },
-    price: { type: Number, required: true },
-    tva: { type: Number, required: true },
-  }
-]
-,
+  products: [
+    {
+      name: { type: String, required: true },
+      price: { type: Number, required: true },
+      tva: { type: Number, required: true },
+    },
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 
-
-// Schéma de l'utilisateur
+// --- Schéma principal utilisateur ---
 const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   username: { type: String, required: true },
   comptabilityEmail: { type: String, default: "" },
-  session: { type: SessionSchema, default: {} },
   recipe: { type: Array, default: [] },
   menu: { type: Array, default: [] },
-  categories: { type: [CategorySchema], default: [] }, 
-   orders: {
+  categories: { type: [CategorySchema], default: [] },
+
+  orders: {
     type: [
       {
         tableNumber: { type: Number, required: true },
@@ -50,31 +64,32 @@ const UserSchema = new mongoose.Schema({
             name: { type: String, required: true },
             price: { type: Number, required: true },
             quantity: { type: Number, required: true },
-            tva: { type: Number, required: true }
-          }
+            tva: { type: Number, required: true },
+          },
         ],
         total: { type: Number, required: true },
         paymentMethod: {
           type: String,
           enum: ["espèces", "carte", "chèque", "ticket"],
-          required: true
+          required: true,
         },
         status: {
           type: String,
           enum: ["en cours", "payée"],
-          default: "en cours"
+          default: "en cours",
         },
-        createdAt: { type: Date, default: Date.now }
-      }
+        createdAt: { type: Date, default: Date.now },
+      },
     ],
-    default: []
+    default: [],
   },
 
-  createdAt: { type: Date, default: Date.now }
+  reports: { type: [YearlyReportSchema], default: [] }, // <<< AJOUT STRUCTURE REPORTS
+
+  createdAt: { type: Date, default: Date.now },
 });
 
-
-// Hashage du mot de passe avant sauvegarde
+// --- Middleware pour hash du mot de passe ---
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
@@ -83,5 +98,5 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-// Export du modèle
+// --- Export ---
 export default mongoose.models.User || mongoose.model("User", UserSchema);

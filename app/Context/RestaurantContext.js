@@ -122,7 +122,6 @@ export function RestaurantProvider({ children }) {
     }
   };
 
-
  const removeItemsFromOrder = async (itemsToRemove, tableNumber, userId) => {
   setOrders(prev => {
     const tableOrders = prev[tableNumber] || [];
@@ -166,9 +165,6 @@ export function RestaurantProvider({ children }) {
     console.error("Erreur bulk remove:", err);
   }
 };
-
-
-
 
   const markAsServed = async (item, tableNumber, userId) => {
     try {

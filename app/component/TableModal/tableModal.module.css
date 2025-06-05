@@ -25,15 +25,21 @@
 
 .closeBtn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: transparent;
+    top: 20px;
+    right: 20px;
     border: none;
     font-size: 20px;
     cursor: pointer;
-    height: 20px;
-    width: 20px;
+    height: 35px;
+    width: 35px;
+    transition: .4s ease-in-out;
     background-color: rgb(248, 248, 248);
+}
+
+.closeBtn:hover {
+    cursor: pointer;
+    color: white;
+    background-color: red;
 }
 
 .tableNumber {

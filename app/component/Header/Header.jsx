@@ -39,8 +39,8 @@ export default function Dashboard() {
           className={styles.logo}
           src="/logo.png"
           alt="logo"
-          width={50}
-          height={50}
+          width={85}
+          height={85}
           priority
         />
       </div>

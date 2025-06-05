@@ -6,6 +6,20 @@
     background-color: rgb(29, 85, 85);
 }
 
+.session {
+    text-align: center;
+    width: 90%;
+    height: 40px;
+    padding: 8px 5px;
+    font-size: 1em;
+    font-weight: bold;
+    margin: 10px 5%;
+    color: white;
+    background-color: green;
+    transition: .4s ease-in-out;
+    border: 2px solid black;
+}
+
 .mainBtn, .startBtn, .stopBtn {
     width: 90%;
     height: 40px;

@@ -69,10 +69,19 @@
 }
 
 .closeButton {
-    width: 30px;
-    height: 30px; 
+    width: 40px;
+    height: 40px; 
+    font-size: 2em;
     position: absolute;
-    right: 0;
+    right: 20px;
+    top : 20px;
+    transition : .4s ease-in-out
+}
+
+.closeButton:hover {
+    cursor: pointer;
+    color : white;
+    background-color: red;
 }
 
 .ul {

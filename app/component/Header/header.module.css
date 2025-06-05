@@ -29,7 +29,7 @@
 }
 
 .title {
-    font-size: 1em;
+    font-size: 1.5em;
     text-align: center;
     padding: 5px;
     margin: 10px;
@@ -95,12 +95,18 @@
 
 .closeModal {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 30px;
-    height: 30px;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 2em;
     color: white;
+    transition: .4s ease-in-out;
     background-color: red;
+}
+
+.closeModal:hover {
+    cursor: pointer;
 }
 
 .h3 {

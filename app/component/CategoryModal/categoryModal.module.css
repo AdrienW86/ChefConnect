@@ -12,10 +12,12 @@
 }
 
 .closeBtn {
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 40px;
     position: absolute;
-    right: 10px;
+    top: 20px;
+    font-size: 2em;
+    right: 20px;
     transition: .4s ease-in-out;
     color: red;
 }
