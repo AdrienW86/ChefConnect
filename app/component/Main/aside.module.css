@@ -52,6 +52,7 @@
     border: 2px solid black;
 }
 
+
 @media (max-width: 600px) {  
     .aside {
         height: 85dvh;

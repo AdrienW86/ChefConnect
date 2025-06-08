@@ -119,6 +119,9 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
   removeItemsFromOrder(itemsToPay, selectedTable, user.userId);
   setOrders(updatedOrders);
 
+  console.log(itemsToPay)
+  console.log(totalToPay)
+  console.log(paymentAmounts)
   // 👇 Appel réel à l'API ici
   try {
     const response = await fetch("/api/pay", {
@@ -138,6 +141,7 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
     const data = await response.json();
 
     if (data.success) {
+      console.log(data)
       console.log("✅ Paiement enregistré avec succès !");
     } else {
       console.error("❌ Erreur d'enregistrement :", data.message || data.error);

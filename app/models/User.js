@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-// --- Schéma du rapport journalier ---
 const DailyReportSchema = new mongoose.Schema({
-  day: { type: Number, required: true }, // Ex: 5
+  day: { type: Number, required: true },
   totalRevenue: { type: Number, required: true },
   tva: {
     tva5_5: { type: Number, default: 0 },
@@ -19,20 +18,17 @@ const DailyReportSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// Remplace cette partie dans ton UserSchema :
+const MonthSchema = new mongoose.Schema({
+  month: { type: String, required: true }, // Ex: "06"
+  days: { type: [DailyReportSchema], default: [] },
+});
 
 const YearlyReportSchema = new mongoose.Schema({
-  year: { type: String, required: true },
-  months: {
-    type: Map,
-    of: [DailyReportSchema],
-    default: {}
-  },
+  year: { type: String, required: true }, // Ex: "2025"
+  months: { type: [MonthSchema], default: [] },
 });
 
 
-
-// --- Schéma de catégorie ---
 const CategorySchema = new mongoose.Schema({
   name: { type: String, required: true },
   products: [
@@ -45,7 +41,6 @@ const CategorySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// --- Schéma principal utilisateur ---
 const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -84,12 +79,11 @@ const UserSchema = new mongoose.Schema({
     default: [],
   },
 
-  reports: { type: [YearlyReportSchema], default: [] }, // <<< AJOUT STRUCTURE REPORTS
+  reports: { type: [YearlyReportSchema], default: [] }, 
 
   createdAt: { type: Date, default: Date.now },
 });
 
-// --- Middleware pour hash du mot de passe ---
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
@@ -98,5 +92,4 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-// --- Export ---
 export default mongoose.models.User || mongoose.model("User", UserSchema);

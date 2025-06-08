@@ -43,7 +43,7 @@ export async function POST(request) {
       dailyReports.push(dailyReport);
     }
 
-    user.markModified("reports"); // Important pour forcer mongoose à détecter la modif
+    user.markModified("reports");
     await user.save();
 
     return new Response(JSON.stringify(dailyReport), {

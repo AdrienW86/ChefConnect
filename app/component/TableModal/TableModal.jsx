@@ -241,12 +241,14 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                   {category.name.toUpperCase()}
                 </button>
               ))}
-              <button
+              <div className={styles.paymentBtnContainer}>
+                <button
                 className={styles.paymentBtn}
                 onClick={() => setIsPaymentModalOpen(true)}
               >
                 PAYER
               </button>
+              </div>
             </div>
           </div>
         </div>

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import ParamsCard from "../ParamsCard/ParamsCard";
 import { useUser } from "@/app/Context/UserContext";
+import RecettesModal from "../RecetteModal/RecetteModal";
+import RecetteArchive from "../RecetteArchive/RecetteArchive";
 import Image from "next/image";
 import styles from "./header.module.css";
 
@@ -10,6 +12,10 @@ export default function Dashboard() {
   const { user, loading } = useUser(); 
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
   const [isLinkOpen, setIsLinkOpen] = useState(false); 
+
+  const [isRecetteOpen, setIsRecetteOpen] = useState(false);
+  const [isArchiveRecetteOpen, setIsArchiveRecetteOpen] = useState(false);
+
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -66,9 +72,14 @@ export default function Dashboard() {
             </div>   
             <div className={styles.profil}>
               <h3 className={styles.h3}> Recettes </h3>
-                <a href="#">Journalière</a>
-                <a href="#">Mensuelle</a>
-                <a href="#">Annuelle</a>
+                <button className={styles.paramsButton} onClick={() => setIsRecetteOpen(true)}>
+                  Recettes courantes
+                </button>
+                {isRecetteOpen && <RecettesModal onClose={() => setIsRecetteOpen(false)} />}
+                <button className={styles.paramsButton} onClick={() => setIsArchiveRecetteOpen(true)}>
+                  Recettes archivées
+                </button>
+                {isArchiveRecetteOpen && <RecetteArchive onClose={() => setIsArchiveRecetteOpen(false)} />}
             </div>   
             <div className={styles.comptes}>
               <h3 className={styles.h3}> Comptabilité </h3>

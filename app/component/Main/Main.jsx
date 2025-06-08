@@ -2,32 +2,37 @@
 
 import React, { useEffect, useState } from "react";
 
+import { useSession } from "@/app/Context/SessionContext"; // Chemin à adapter
 import { useSocket } from "@/app/Context/SocketContext";
 import Tables from '../Tables/Tables';
 import styles from './aside.module.css';
 
 export default function Main({ user }) {
+  const { session, setSession, closeSession } = useSession();
   const socket = useSocket();
-  const [session, setSession] = useState(null);
+
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(null);
   const [tableNumber, setTableNumber] = useState("");
 
-useEffect(() => {
-  if (!user?.userId) return;
+  useEffect(() => {
+    console.log("Type de session:", typeof session);
+    console.log("Valeur de session:", session);
 
-  fetch(`/api/orders?userId=${user.userId}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.tables) {
-        setTables(data.tables);
-        setSession(prev => ({ ...prev, tables: data.tables }));
-      }
-    })
-    .catch(err => {
-      console.error("Erreur fetch tables :", err);
-    });
-}, [user]);
+    if (!user?.userId) return;
+
+    fetch(`/api/orders?userId=${user.userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.tables) {
+          setTables(data.tables);
+          setSession(prev => ({ ...prev, tables: data.tables }));
+        }
+      })
+      .catch(err => {
+        console.error("Erreur fetch tables :", err);
+      });
+  }, [user]);
 
   const openTable = () => {
     const num = parseInt(tableNumber, 10);
@@ -43,12 +48,6 @@ useEffect(() => {
 
     const updatedTables = [...tables, num];
     setTables(updatedTables);
-
-    // Mise à jour de la session avec les tables ouvertes
-    setSession(prevSession => ({
-      ...prevSession,
-      tables: updatedTables
-    }));
 
     // Émettre l'événement au serveur pour informer les autres clients
     if (socket) {
@@ -77,81 +76,77 @@ useEffect(() => {
     if (isConfirmed) {
       const updatedTables = tables.filter(table => table !== num);
       setTables(updatedTables);
-
-      setSession(prevSession => ({
-        ...prevSession,
-        tables: updatedTables
-      }));
     }
   };
 
-
   async function startSession(userId) {
-  try {
-    const res = await fetch("/api/reports/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      console.error("Erreur API :", data.error);
-      return;
-    }
-
-    console.log("Session démarrée :", data);
-    setSession(data)
-    // Tu peux maintenant stocker cette session dans le state ou le contexte
-  } catch (error) {
-    console.error("Erreur lors de l'appel API :", error);
-  }
-}
-
-const stopSession = async () => {
-  if (!session) return;
-
-  if (window.confirm("Voulez-vous vraiment fermer la session ?")) {
     try {
-      const res = await fetch("/api/reports/close", {
+      const res = await fetch("/api/reports/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: session.id }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
       });
 
-      if (!res.ok) throw new Error("Erreur lors de la fermeture de session");
+      const data = await res.json();
 
-      // Réinitialisation locale
-      setSession(null);
-      setTables([]);
-      setTableNumber("");
-      setSelectedTable(null);
+      if (!res.ok) {
+        console.error("Erreur API :", data.error);
+        return;
+      }
 
-      // Eventuellement prévenir via socket
-      if (socket) socket.emit("fermerSession", session.id);
+      console.log("Session démarrée :", data);
+      setSession(data);
     } catch (error) {
-      console.error(error);
-      alert("Erreur lors de la fermeture de la session.");
+      console.error("Erreur lors de l'appel API :", error);
     }
   }
-};
 
+  const stopSession = async () => {
+    if (!session) return;
+
+    if (window.confirm("Voulez-vous vraiment fermer la session ?")) {
+      try {
+        const res = await fetch("/api/reports/close", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: session.id }),
+        });
+
+        if (!res.ok) throw new Error("Erreur lors de la fermeture de session");
+
+        // Réinitialisation locale
+        setSession(null);
+        setTables([]);
+        setTableNumber("");
+        setSelectedTable(null);
+
+        // Eventuellement prévenir via socket
+        if (socket) socket.emit("fermerSession", session.id);
+      } catch (error) {
+        console.error(error);
+        alert("Erreur lors de la fermeture de la session.");
+      }
+    }
+  };
 
   return (
     <>
       <div className={styles.aside}>
-        {session ? <div className={styles.session}> Session en cours...  </div> : 
-        <button
-         onClick={() => startSession(user.userId)}
+        <p>Session: {String(session)}</p>
 
-          className={styles.startBtn}
-        >
-          Démarrer session
-        </button>
-}
+        {!session ? (
+          <button
+            onClick={() => startSession(user.userId)}
+            className={styles.startBtn}
+          >
+            Démarrer session
+          </button>
+        ) : (
+          <div className={styles.session}>Session en cours...</div>
+        )}
+
         <input
           type="number"
           value={tableNumber}
@@ -172,14 +167,13 @@ const stopSession = async () => {
           Annuler table
         </button>
         {session ?  
-        <button
-           onClick={() => stopSession(user.userId)}
-          className={styles.stopBtn}
-        >
-          Fermer session
-        </button> : null
+          <button
+            onClick={() => stopSession(user.userId)}
+            className={styles.stopBtn}
+          >
+            Fermer session
+          </button> : null
         }
-       
       </div>
       <Tables 
         tables={tables} 
