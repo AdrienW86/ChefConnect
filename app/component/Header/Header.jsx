@@ -65,14 +65,17 @@ export default function Dashboard() {
             <button onClick={toggleMenu} className={styles.closeModal}> X </button>
             <div className={styles.profil}>
               <h3 className={styles.h3}> Profil </h3>
-                <a href="#">Consulter</a>
-                <a href="#">Modifier</a>
+               <div className={styles.boxBtn}>
                  <button className={styles.paramsButton} onClick={toggleLink}> Editer la carte
                   </button>
+                  <button className={styles.paramsButton} onClick={toggleLink}> Modifier profil
+                  </button>
+                </div>
             </div>   
             <div className={styles.profil}>
               <h3 className={styles.h3}> Recettes </h3>
-                <button className={styles.paramsButton} onClick={() => setIsRecetteOpen(true)}>
+                <div className={styles.boxBtn}>
+                  <button className={styles.paramsButton} onClick={() => setIsRecetteOpen(true)}>
                   Recettes courantes
                 </button>
                 {isRecetteOpen && <RecettesModal onClose={() => setIsRecetteOpen(false)} />}
@@ -80,11 +83,16 @@ export default function Dashboard() {
                   Recettes archivées
                 </button>
                 {isArchiveRecetteOpen && <RecetteArchive onClose={() => setIsArchiveRecetteOpen(false)} />}
+                </div>
             </div>   
-            <div className={styles.comptes}>
+            <div className={styles.profil2}>
               <h3 className={styles.h3}> Comptabilité </h3>
-                <a href="#">Envoyer à la comptable</a>
-                <a href="#">Modifier l'adresse comptable</a>
+                <div className={styles.boxBtn}>
+                 <button className={styles.paramsButton} onClick={toggleLink}> Envoyer à la comptable
+                  </button>
+                  <button className={styles.paramsButton} onClick={toggleLink}> Paramètres comptable
+                  </button>
+                </div>
             </div>          
           </section>
         )}

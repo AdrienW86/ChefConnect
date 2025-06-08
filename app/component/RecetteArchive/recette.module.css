@@ -12,11 +12,11 @@
 }
 
 .modalContent {
-  background: #47386b;
+  background-color: rgb(29, 85, 85);
   padding: 2rem;
   border-radius: 16px;
-  width: 90%;
-  max-width: 500px;
+  width: 100%;
+  height: 100%;
   position: relative;
 }
 
@@ -87,7 +87,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -95,10 +95,10 @@
 }
 
 .detailContent {
-  background: rgb(233, 135, 135);
+background-color: rgb(29, 85, 85);
   padding: 20px;
-  max-width: 600px;
-  max-height: 80vh;
+  width: 100vh;
+  height: 100vh;
   overflow-y: auto;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -145,4 +145,26 @@
 .yearButton:hover,
 .monthButton:hover {
   text-decoration: underline;
+}
+
+.h3 {
+    margin: 30px auto;
+    width: 80%;
+    padding: 8px 30px;
+    text-align: center;
+    border: 2px solid white;
+}
+
+.h4 {
+    text-decoration: underline;
+    margin: 20px;
+}
+
+.ul {
+    margin: 20px;
+    list-style: none;
+}
+
+.li {
+    margin: 10px;
 }

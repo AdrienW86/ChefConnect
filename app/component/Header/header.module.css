@@ -65,6 +65,7 @@
 }
 
 .paramsButton {
+    height: 35px;
     color: black;
     background-color: #ffffff;
 }
@@ -88,15 +89,16 @@
     display: flex;
     top: 0;
     right: 0;
-    background-color: grey;
-    height: 140px;
+    background-color: rgb(29, 85, 85);
+    height: 10vh;
     width: 100%;  
+    border-bottom: 1px solid black;
 }
 
 .closeModal {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 0px;
+    right: 0px;
     width: 40px;
     height: 40px;
     font-size: 2em;
@@ -110,12 +112,14 @@
 }
 
 .h3 {
-    color: black;
-    margin-bottom: 10px;
+    border: 1px solid white;
+    width: 100%;
+    text-align: center;
+    background-color: #ffffff;
+    color: rgb(29, 85, 85);
 }
 
 .profil {
-    padding: 5px;
     width: 33%;
     display: flex;
     height: 100%;
@@ -123,12 +127,18 @@
     border-right: 1px solid black;
 }
 
-.comptes {
-    padding: 5px;
+.boxBtn {
+    margin-top: 8px;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.profil2 {
     width: 34%;
     display: flex;
     height: 100%;
-    flex-direction: column; 
+    flex-direction: column;
 }
 
 .errorMessage {

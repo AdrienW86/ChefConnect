@@ -134,8 +134,6 @@ export default function Main({ user }) {
   return (
     <>
       <div className={styles.aside}>
-        <p>Session: {String(session)}</p>
-
         {!session ? (
           <button
             onClick={() => startSession(user.userId)}
