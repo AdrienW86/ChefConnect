@@ -4,7 +4,6 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0,0,0,0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,12 +11,11 @@
 }
 
 .modalContent {
-  background-color: rgb(29, 85, 85);
   padding: 2rem;
-  border-radius: 16px;
   width: 100%;
   height: 100%;
   position: relative;
+  background-color: rgb(29, 85, 85);
 }
 
 .closeButton {
@@ -28,6 +26,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  color: white;
 }
 
 .title {
@@ -51,19 +50,17 @@
   cursor: pointer;
 }
 
-.details {
-    
-    display: flex;
-    justify-content: center;
-    width: 150px;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    font-weight: bold;
-    margin: 50px auto;
+.details {   
+  display: flex;
+  justify-content: center;
+  width: 150px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: bold;
+  margin: 50px auto;
 }
 
-/* Style pour le bouton "Voir le détail" */
 .detailButton {
   margin-left: 10px;
   padding: 4px 8px;
@@ -80,7 +77,6 @@
   background-color: #005bb5;
 }
 
-/* Styles modale détails */
 .detailOverlay {
   position: fixed;
   top: 0;
@@ -95,7 +91,7 @@
 }
 
 .detailContent {
-background-color: rgb(29, 85, 85);
+  background-color: rgb(29, 85, 85);
   padding: 20px;
   width: 100vh;
   height: 100vh;
@@ -105,7 +101,6 @@ background-color: rgb(29, 85, 85);
   position: relative;
 }
 
-/* Bouton fermer modale */
 .detailContent .closeButton {
   position: absolute;
   top: 8px;
@@ -116,7 +111,6 @@ background-color: rgb(29, 85, 85);
   cursor: pointer;
 }
 
-/* Optionnel : listes imbriquées (années, mois, jours) */
 .archiveList,
 .monthList,
 .dayList {
@@ -131,7 +125,6 @@ background-color: rgb(29, 85, 85);
   margin-bottom: 8px;
 }
 
-/* Style des boutons années et mois (tu peux adapter) */
 .yearButton,
 .monthButton {
   background: none;
@@ -148,23 +141,57 @@ background-color: rgb(29, 85, 85);
 }
 
 .h3 {
-    margin: 30px auto;
-    width: 80%;
-    padding: 8px 30px;
-    text-align: center;
-    border: 2px solid white;
+  margin: 30px auto;
+  width: 80%;
+  padding: 8px 30px;
+  text-align: center;
+  border: 2px solid white;
+}
+
+.h7 {
+  text-decoration: underline;
+  margin: 50px 20px 20px 20px;
 }
 
 .h4 {
-    text-decoration: underline;
-    margin: 20px;
+  text-decoration: underline;
+  margin: 20px;
 }
 
 .ul {
-    margin: 20px;
-    list-style: none;
+  margin: 20px;
+  list-style: none;
 }
 
 .li {
-    margin: 10px;
+  margin: 10px;
+}
+
+.totalRevenue {
+  font-weight: bold;
+  color: rgb(2, 255, 2)
+}
+
+.totalTvaReel {
+  font-weight: bold;
+  color: rgb(255, 3, 3)
+}
+
+.pDetails {
+  margin: 10px 20px;
+}
+
+.pDetails2 {
+  margin: 10px 20px 50px 20px;
+}
+
+.underline {
+  letter-spacing: 0.1em;
+  text-decoration: underline;
+}
+
+.underline2 {
+  letter-spacing: 0.1em;
+  font-size: 1.2rem;
+  text-decoration: underline;
 }

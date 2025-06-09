@@ -28,6 +28,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  color: white;
 }
 
 .title {
@@ -51,14 +52,13 @@
   cursor: pointer;
 }
 
-.details {
-    
-    display: flex;
-    justify-content: center;
-    width: 150px;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    font-weight: bold;
-    margin: 50px auto;
+.details {   
+  display: flex;
+  justify-content: center;
+  width: 150px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: bold;
+  margin: 50px auto;
 }
