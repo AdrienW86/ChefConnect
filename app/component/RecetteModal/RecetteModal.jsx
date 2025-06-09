@@ -21,6 +21,7 @@ export default function RecettesModal({ onClose }) {
         });
 
         const data = await res.json();
+        console.log(data)
         if (data.success) {
           setReports(data.reports);
         } else {
@@ -31,33 +32,55 @@ export default function RecettesModal({ onClose }) {
       } finally {
         setLoading(false);
       }
+      
     };
 
     fetchReports();
   }, [user]);
 
   const renderTotal = (type) => {
-    if (!reports) return 0;
-    let total = 0;
+  if (!reports) return "0.00";
 
-    for (const year of reports) {
-      for (const month of year.months) {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1; // Mois en base 1 (01 à 12)
+  const currentDay = today.getDate();
+
+  let total = 0;
+
+  for (const year of reports) {
+    const yearNumber = parseInt(year.year);
+
+    if (type === "annuelle" && yearNumber !== currentYear) continue;
+
+    for (const month of year.months) {
+      const monthNumber = parseInt(month.month);
+
+      if (type === "annuelle") {
         for (const day of month.days) {
-          if (type === "journalière") total += day.totalRevenue;
-        }
-        if (type === "mensuelle") {
-          total += month.days.reduce((acc, d) => acc + d.totalRevenue, 0);
+          total += day.totalRevenue || 0;
         }
       }
-      if (type === "annuelle") {
-        for (const month of year.months) {
-          total += month.days.reduce((acc, d) => acc + d.totalRevenue, 0);
+
+      if (type === "mensuelle" && yearNumber === currentYear && monthNumber === currentMonth) {
+        for (const day of month.days) {
+          total += day.totalRevenue || 0;
+        }
+      }
+
+      if (type === "journalière" && yearNumber === currentYear && monthNumber === currentMonth) {
+        for (const day of month.days) {
+          if (parseInt(day.day) === currentDay) {
+            total += day.totalRevenue || 0;
+          }
         }
       }
     }
+  }
 
-    return total.toFixed(2);
-  };
+  return total.toFixed(2);
+};
+
 
   return (
     <div className={styles.modalOverlay}>
@@ -72,25 +95,24 @@ export default function RecettesModal({ onClose }) {
         ) : (
           <>
             <div className={styles.section}>
-              <h3>Recette journalière</h3>
-              <p>{renderTotal("journalière")} €</p>
+              <h3 className={styles.h3}>Journalière</h3>
+              <p className={styles.green}>{renderTotal("journalière")} €</p>
             </div>
             <div className={styles.section}>
-              <h3>Recette mensuelle</h3>
-              <p>{renderTotal("mensuelle")} €</p>
+              <h3 className={styles.h3} >Mensuelle</h3>
+              <p className={styles.green}>{renderTotal("mensuelle")} €</p>
             </div>
             <div className={styles.section}>
-              <h3>Recette annuelle</h3>
-              <p>{renderTotal("annuelle")} €</p>
+              <h3 className={styles.h3}>Annuelle</h3>
+              <p className={styles.green}>{renderTotal("annuelle")} €</p>
             </div>
           </>
         )}
         <button className={styles.details} onClick={onClose}>
-            Voir le détail
+            Fermer
         </button>
       </div>
       
     </div>
   );
 }
-

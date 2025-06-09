@@ -27,7 +27,7 @@ export async function POST(req) {
 
     // Génération du JWT
     const token = jwt.sign(
-      { userId: user._id, email: user.email, username: user.username },
+      { userId: user._id, email: user.email, username: user.username, comptabilityEmail: user.comptabilityEmail },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
@@ -46,6 +46,7 @@ export async function POST(req) {
       user: {
         email: user.email,
         username: user.username,
+        comptabilityEmail: user.comptabilityEmail
       }
     });
     

@@ -33,7 +33,8 @@
 
 .title {
   font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 60px;
+  text-decoration: underline;
 }
 
 .section {
@@ -61,4 +62,13 @@
   padding: 10px;
   font-weight: bold;
   margin: 50px auto;
+}
+
+.green {
+  color: rgb(2, 255, 2);
+  font-weight: bold;
+}
+
+.h3 {
+  color: rgb(179, 179, 179)
 }

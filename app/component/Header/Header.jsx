@@ -5,6 +5,8 @@ import ParamsCard from "../ParamsCard/ParamsCard";
 import { useUser } from "@/app/Context/UserContext";
 import RecettesModal from "../RecetteModal/RecetteModal";
 import RecetteArchive from "../RecetteArchive/RecetteArchive";
+import ComptaEmailForm from "../Comptability/Comptability";
+import Profil from '../Profil/Profil'
 import Image from "next/image";
 import styles from "./header.module.css";
 
@@ -12,17 +14,25 @@ export default function Dashboard() {
   const { user, loading } = useUser(); 
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
   const [isLinkOpen, setIsLinkOpen] = useState(false); 
-
+  const [isProfil, setIsProfil] = useState(false);
   const [isRecetteOpen, setIsRecetteOpen] = useState(false);
   const [isArchiveRecetteOpen, setIsArchiveRecetteOpen] = useState(false);
-
+  const [isComptabilityOpen, setIsComptabilityOpen] = useState(false)
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+    const toggleProfil = () => {
+    setIsProfil(!isProfil);
+  };
+
     const toggleLink = () => {
     setIsLinkOpen(!isLinkOpen);
+  };
+
+    const toggleComptability = () => {
+    setIsComptabilityOpen(!isComptabilityOpen);
   };
 
   const handleLogout = async () => {
@@ -66,10 +76,12 @@ export default function Dashboard() {
             <div className={styles.profil}>
               <h3 className={styles.h3}> Profil </h3>
                <div className={styles.boxBtn}>
-                 <button className={styles.paramsButton} onClick={toggleLink}> Editer la carte
+                 <button className={styles.paramsButton} onClick={() => toggleLink(true)}> Editer la carte
                   </button>
-                  <button className={styles.paramsButton} onClick={toggleLink}> Modifier profil
+                  <button className={styles.paramsButton} onClick={() => setIsProfil(true)}> 
+                    Modifier profil
                   </button>
+                   {isProfil && <Profil onClose={() => setIsProfil(false)} />}
                 </div>
             </div>   
             <div className={styles.profil}>
@@ -90,8 +102,10 @@ export default function Dashboard() {
                 <div className={styles.boxBtn}>
                  <button className={styles.paramsButton} onClick={toggleLink}> Envoyer à la comptable
                   </button>
-                  <button className={styles.paramsButton} onClick={toggleLink}> Paramètres comptable
+                  <button className={styles.paramsButton} onClick={() =>setIsComptabilityOpen(true)}> 
+                    Paramètres comptable
                   </button>
+                   {isComptabilityOpen && <ComptaEmailForm onClose={() => setIsComptabilityOpen(false)} />}
                 </div>
             </div>          
           </section>

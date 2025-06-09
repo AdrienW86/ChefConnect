@@ -5,17 +5,14 @@ import { usePathname } from "next/navigation";
 
 const UserContext = createContext();
 
-export const useUser = () => {
-  return useContext(UserContext);
-};
+export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
   useEffect(() => {
-   
     if (pathname === "/") {
       setLoading(false);
       return;
@@ -40,7 +37,8 @@ export const UserProvider = ({ children }) => {
     };
 
     fetchUserData();
-  }, [pathname]); 
+  }, [pathname]);
+
   return (
     <UserContext.Provider value={{ user, setUser, loading }}>
       {children}
