@@ -1,16 +1,16 @@
 .paymentModal {
-    position: fixed;
+    position: absolute;
     top: 0;
     right: 0; 
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     display: flex;
     z-index: 100000000;
     background-color: rgb(51, 51, 51);
 }
 
 .paymentModalContent {  
-    height: 100vh;
+    min-height: 100vh;
     width: 100%;
     top: 0;
     right: 0;
@@ -109,11 +109,12 @@
     justify-content: flex-end;
 }
 
-
 .paymentActions {
     display: flex;
+    flex-direction: column;
     width: 100%;
-    justify-content: space-around;
+    margin: 40px;
+    justify-content: center;
 }
 
 .payFullBtn {
@@ -122,6 +123,77 @@
     background-color: green;
     border: none;
     padding: 16px;
+    width: 250px;
+    margin: auto;
     font-weight: bold;
     border-radius: 8px;
+}
+
+.ticketContainer {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    min-height: 100vh;
+    background-color: rgb(58, 58, 58); 
+}
+
+.ticket {
+    margin: auto;
+    width: 520px;;
+    background-color: rgb(58, 58, 58); 
+    z-index: 9999;
+    overflow: hidden;
+    display: flex;
+    border: 1px solid white;
+    flex-direction: column;
+    color: white;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.ticketTitle {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    text-decoration: underline;
+}
+
+.ticketInfos {
+    margin: 5px;
+}
+.ticketPhone {
+    margin: 10px;
+}
+
+.ticketItems {
+    width: 430px;
+    margin:  4px auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ticketNumber {
+    margin: 10px;
+    font-weight: bold;
+}
+
+.tvaItemTicket {
+    width: 430px;
+    margin:  4px auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ticketMode {
+    width: 430px;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+.ticketMessage {
+    margin-top: 20px;
 }

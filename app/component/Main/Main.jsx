@@ -133,18 +133,13 @@ export default function Main({ user }) {
 
   return (
     <>
-      <div className={styles.aside}>
-        {!session ? (
+      <div className={styles.aside}>      
           <button
             onClick={() => startSession(user.userId)}
             className={styles.startBtn}
           >
             Démarrer session
           </button>
-        ) : (
-          <div className={styles.session}>Session en cours...</div>
-        )}
-
         <input
           type="number"
           value={tableNumber}

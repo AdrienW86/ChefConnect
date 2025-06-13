@@ -2,7 +2,7 @@
     display: flex;
     color: white;
     padding: 20px 0;
-    height: 10vh;
+    height: 95px;
     width: 100%;
     background-color: rgb(29, 85, 85);
 }
@@ -90,7 +90,7 @@
     top: 0;
     right: 0;
     background-color: rgb(29, 85, 85);
-    height: 10vh;
+    height: 95px;
     width: 100%;  
     border-bottom: 1px solid black;
 }

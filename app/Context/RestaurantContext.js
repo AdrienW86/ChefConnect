@@ -83,44 +83,48 @@ export function RestaurantProvider({ children }) {
   }
 };
 
-  const removeItemFromOrder = async (item, tableNumber, userId) => {
-    setOrders(prev => {
-      const tableOrders = prev[tableNumber] || [];
-      let order = tableOrders.find(o => o.status === "en cours");
-      if (!order) return prev;
+const removeItemFromOrder = async (item, tableNumber, userId) => {
+  const confirmed = window.confirm(`Supprimer "${item.name}" de la commande ?`);
+  if (!confirmed) return; // On annule si l'utilisateur refuse
 
-      const newItems = order.items.filter(i => i.name !== item.name);
-      const newTotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  setOrders(prev => {
+    const tableOrders = prev[tableNumber] || [];
+    let order = tableOrders.find(o => o.status === "en cours");
+    if (!order) return prev;
 
-      if (newItems.length === 0) {
-        // Supprimer la commande si plus d'items
-        const others = tableOrders.filter(o => o._id !== order._id);
-        return { ...prev, [tableNumber]: others };
-      } else {
-        const updatedOrder = { ...order, items: newItems, total: newTotal };
-        const others = tableOrders.filter(o => o._id !== order._id);
-        return { ...prev, [tableNumber]: [...others, updatedOrder] };
-      }
-    });
+    const newItems = order.items.filter(i => i.name !== item.name);
+    const newTotal = newItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-    try {
-      const res = await fetch(
-        `/api/orders/${tableNumber}/${encodeURIComponent(item.name)}?userId=${encodeURIComponent(userId)}`,
-        { method: "DELETE" }
-      );
-      if (!res.ok) throw new Error("Erreur suppression commande");
-      const data = await res.json();
-
-      setOrders(prev => {
-        if (!data.order || !data.order._id) return prev;
-        const tableOrders = prev[tableNumber] || [];
-        const others = tableOrders.filter(o => o && o._id && o._id !== data.order._id && !o._id.startsWith("temp_"));
-        return { ...prev, [tableNumber]: [...others, data.order] };
-      });
-    } catch (error) {
-      console.error("Erreur removeItemFromOrder:", error);
+    if (newItems.length === 0) {
+      // Supprimer la commande si plus d'items
+      const others = tableOrders.filter(o => o._id !== order._id);
+      return { ...prev, [tableNumber]: others };
+    } else {
+      const updatedOrder = { ...order, items: newItems, total: newTotal };
+      const others = tableOrders.filter(o => o._id !== order._id);
+      return { ...prev, [tableNumber]: [...others, updatedOrder] };
     }
-  };
+  });
+
+  try {
+    const res = await fetch(
+      `/api/orders/${tableNumber}/${encodeURIComponent(item.name)}?userId=${encodeURIComponent(userId)}`,
+      { method: "DELETE" }
+    );
+    if (!res.ok) throw new Error("Erreur suppression commande");
+    const data = await res.json();
+
+    setOrders(prev => {
+      if (!data.order || !data.order._id) return prev;
+      const tableOrders = prev[tableNumber] || [];
+      const others = tableOrders.filter(o => o && o._id && o._id !== data.order._id && !o._id.startsWith("temp_"));
+      return { ...prev, [tableNumber]: [...others, data.order] };
+    });
+  } catch (error) {
+    console.error("Erreur removeItemFromOrder:", error);
+  }
+};
+
 
  const removeItemsFromOrder = async (itemsToRemove, tableNumber, userId) => {
   setOrders(prev => {
@@ -166,27 +170,6 @@ export function RestaurantProvider({ children }) {
   }
 };
 
-  const markAsServed = async (item, tableNumber, userId) => {
-    try {
-      const res = await fetch(`/api/orders/${tableNumber}/mark-served`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item, userId }),
-      });
-      if (!res.ok) throw new Error("Erreur marquage servi");
-      const data = await res.json();
-
-      setOrders(prev => {
-        if (!data.order || !data.order._id) return prev;
-        const tableOrders = prev[tableNumber] || [];
-        const others = tableOrders.filter(o => o && o._id && o._id !== data.order._id);
-        return { ...prev, [tableNumber]: [...others, data.order] };
-      });
-    } catch (error) {
-      console.error("Erreur markAsServed:", error);
-    }
-  };
-
   return (
     <RestaurantContext.Provider
       value={{
@@ -197,7 +180,6 @@ export function RestaurantProvider({ children }) {
         addItemToOrder,
         removeItemFromOrder,
         removeItemsFromOrder,
-        markAsServed,
       }}
     >
       {children}

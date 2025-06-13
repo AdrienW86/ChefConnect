@@ -5,7 +5,7 @@ import styles from './paymentModal.module.css';
 
 const PAYMENT_METHODS = ['Ticket', 'Espèces', 'CB', 'Chèque'];
 
-export default function PaymentModal({ user, selectedTable, orders, setOrders, setIsPaymentModalOpen, removeItemsFromOrder }) {
+export default function PaymentModal({ user, selectedTable, orders, setOrders, setIsPaymentModalOpen, removeItemsFromOrder, ticketNumber }) {
   const [selectedQuantities, setSelectedQuantities] = useState({});
   const [showReceipt, setShowReceipt] = useState(false);
   const [paidItems, setPaidItems] = useState([]);
@@ -79,78 +79,73 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
     }));
   };
 
- const processPayment = async (payAllParam) => {
-  setPayAll(payAllParam);
+  const processPayment = async (payAllParam) => {
+    setPayAll(payAllParam);
 
-  const itemsToPay = payAllParam
-    ? itemsWithIds
-    : itemsWithIds
-        .filter(item => (selectedQuantities[item.id] || 0) > 0)
-        .map(item => ({
-          ...item,
-          quantity: selectedQuantities[item.id],
-        }));
+    const itemsToPay = payAllParam
+      ? itemsWithIds
+      : itemsWithIds
+          .filter(item => (selectedQuantities[item.id] || 0) > 0)
+          .map(item => ({
+            ...item,
+            quantity: selectedQuantities[item.id],
+          }));
 
-  const totalToPay = payAllParam ? calculateTotal() : calculateSelectedTotal();
-  const paymentSum = Object.values(paymentAmounts).reduce((a, b) => a + b, 0);
+    const totalToPay = payAllParam ? calculateTotal() : calculateSelectedTotal();
+    const paymentSum = Object.values(paymentAmounts).reduce((a, b) => a + b, 0);
 
-  if (paymentSum !== totalToPay) {
-    alert(`Le total des paiements (${paymentSum.toFixed(2)}€) doit être égal au total à payer (${totalToPay.toFixed(2)}€).`);
-    return;
-  }
+    if (paymentSum !== totalToPay) {
+      alert(`Le total des paiements (${paymentSum.toFixed(2)}€) doit être égal au total à payer (${totalToPay.toFixed(2)}€).`);
+      return;
+    }
 
-  setPaidItems(itemsToPay);
-  setShowReceipt(true);
+    setPaidItems(itemsToPay);
+    setShowReceipt(true);
 
-  const remainingItems = payAllParam
-    ? []
-    : itemsWithIds.flatMap(item => {
-        const paidQty = selectedQuantities[item.id] || 0;
-        const remainingQty = item.quantity - paidQty;
-        return remainingQty > 0 ? [{ ...item, quantity: remainingQty }] : [];
+    const remainingItems = payAllParam
+      ? []
+      : itemsWithIds.flatMap(item => {
+          const paidQty = selectedQuantities[item.id] || 0;
+          const remainingQty = item.quantity - paidQty;
+          return remainingQty > 0 ? [{ ...item, quantity: remainingQty }] : [];
+        });
+
+    const updatedOrders = orders.map(order =>
+      order.tableNumber === selectedTable
+        ? { ...order, items: remainingItems }
+        : order
+    );
+
+    removeItemsFromOrder(itemsToPay, selectedTable, user.userId);
+    setOrders(updatedOrders);
+
+    // 👇 Appel réel à l'API ici
+    try {
+      const response = await fetch("/api/pay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.userId,
+          tableNumber: selectedTable,
+          items: itemsToPay,
+          total: totalToPay,
+          paymentMethods: paymentAmounts
+        }),
       });
 
-  const updatedOrders = orders.map(order =>
-    order.tableNumber === selectedTable
-      ? { ...order, items: remainingItems }
-      : order
-  );
+      const data = await response.json();
 
-  removeItemsFromOrder(itemsToPay, selectedTable, user.userId);
-  setOrders(updatedOrders);
-
-  console.log(itemsToPay)
-  console.log(totalToPay)
-  console.log(paymentAmounts)
-  // 👇 Appel réel à l'API ici
-  try {
-    const response = await fetch("/api/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: user.userId,
-        tableNumber: selectedTable,
-        items: itemsToPay,
-        total: totalToPay,
-        paymentMethods: paymentAmounts
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      console.log(data)
-      console.log("✅ Paiement enregistré avec succès !");
-    } else {
-      console.error("❌ Erreur d'enregistrement :", data.message || data.error);
+      if (data.success) {
+        console.log("✅ Paiement enregistré avec succès !");
+      } else {
+        console.error("❌ Erreur d'enregistrement :", data.message || data.error);
+      }
+    } catch (error) {
+      console.error("❌ Erreur lors de l'appel API :", error);
     }
-  } catch (error) {
-    console.error("❌ Erreur lors de l'appel API :", error);
-  }
-};
-
+  };
 
   const printReceipt = () => {
     const printContent = document.getElementById('receipt').innerHTML;
@@ -171,7 +166,7 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
     const format = (n) => `${n.toFixed(2)} €`;
 
     items.forEach(item => {
-      const rate = item.tvaRate || 10;
+      const rate = item.tva;
       const total = item.price * item.quantity;
       const ht = total / (1 + rate / 100);
       const tva = total - ht;
@@ -181,33 +176,66 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
       tvaMap[rate].tva += tva;
     });
 
+    const totalHT = Object.values(tvaMap).reduce((acc, cur) => acc + cur.ht, 0);
+    const totalTVA = Object.values(tvaMap).reduce((acc, cur) => acc + cur.tva, 0);
+
     return (
-      <div id="receipt" style={{ fontFamily: 'monospace', width: '72mm', padding: '10px' }}>
-        <div style={{ textAlign: 'center' }}><strong>Les Délices de Saleilles</strong></div>
-        <div style={{ textAlign: 'center' }}>26 avenue de Perpignan, 66280</div>
-        <div style={{ textAlign: 'center' }}>Tél: 0650729588</div>
-        <hr />
-        {items.map((item, i) => (
-          <div key={i}>
-            {item.name} x{item.quantity} .......... {format(item.price * item.quantity)}
-          </div>
-        ))}
-        <hr />
-        {Object.entries(tvaMap).map(([rate, val], i) => (
-          <div key={i}>TVA {rate}% - HT: {format(val.ht)} / TVA: {format(val.tva)}</div>
-        ))}
-        <hr />
-        <div><strong>Total TTC : {format(items.reduce((sum, item) => sum + item.price * item.quantity, 0))}</strong></div>
-        <hr />
-        <div><strong>Modes de paiement :</strong></div>
-        {PAYMENT_METHODS.map(method => (
-          <div key={method}>
-            {method}: {format(paymentAmounts[method])}
-          </div>
-        ))}
-        <hr />
+     <section className={styles.ticketContainer}>
+       <div id="receipt" className={styles.ticket}>
+        <div className={styles.ticketTitle}><strong>Les Délices de Saleilles</strong></div>
+        <div className={styles.ticketInfos}>26 avenue de Perpignan, 66280 Saleilles</div>
+         <div className={styles.ticketInfos}> 66280 Saleilles</div>
+        <div className={styles.ticketPhone}>Tél: 06.50.72.95.88</div>
         <div style={{ textAlign: 'center' }}>{new Date().toLocaleString()}</div>
+        <div className={styles.ticketNumber}>Ticket n° : <strong>{ticketNumber}</strong></div>
+        <p> ===============================================</p>
+
+        {items.map((item, i) => {
+          const rate = item.tva;
+          const totalTTC = item.price * item.quantity;
+          const ht = totalTTC / (1 + rate / 100);
+          return (
+            <div className={styles.ticketItems} key={i}>
+              <p>{item.name} x{item.quantity}</p>
+              <p>{format(ht)} HT</p>
+            </div>
+          );
+        })}
+        <p> ===============================================</p>
+        <div className={styles.tvaItemTicket}>
+          <p> <strong>Total HT : </strong> </p>
+          <p> <strong> {format(totalHT)} </strong></p>
+        </div>
+        <p> ===============================================</p>
+        {Object.entries(tvaMap).map(([rate, val], i) => (
+          <div className={styles.tvaItemTicket} key={i}>
+            <p>TVA {rate}%</p> 
+            <p>{format(val.tva)}</p> 
+          </div>
+        ))}
+        <p> ===============================================</p>
+         <div className={styles.tvaItemTicket}>
+          <p> <strong>Total TVA :</strong></p>
+          <p><strong> {format(totalTVA)} </strong></p>
+         </div>
+        
+        <p> ===============================================</p>
+        <div className={styles.tvaItemTicket}>
+          <p><strong>Total TTC : </strong></p>
+          <p><strong> {format(items.reduce((sum, item) => sum + item.price * item.quantity, 0))}</strong></p>
+        </div>
+        <p> ===============================================</p>
+        <div className={styles.ticketMode}><strong>Modes de paiement </strong></div>
+        {PAYMENT_METHODS.filter(method => paymentAmounts[method] > 0).map(method => (
+          <div key={method} className={styles.tvaItemTicket}>
+           <p>{method}:</p>  
+           <p>{format(paymentAmounts[method])}</p>
+          </div>
+        ))}
+         <p> ===============================================</p>
+        <p className={styles.ticketMessage}> Nous vous remercions de votre visite, à bientôt !</p>
       </div>
+     </section>
     );
   };
 
@@ -241,73 +269,57 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
                   checked={payAll}
                   onChange={() => setPayAll(true)}
                   className={styles.radio}
-                /> Payer tout <span className={styles.span}>({calculateTotal().toFixed(2)}€)</span>
+                /> Payer tout <span className={styles.span}> {calculateTotal().toFixed(2)} €</span>
               </label>
-              <br />
               <label className={styles.label}>
                 <input
                   type="radio"
                   checked={!payAll}
                   onChange={() => setPayAll(false)}
                   className={styles.radio}
-                  disabled={itemsWithIds.length === 0}
-                /> Payer la sélection <span className={styles.span}>({calculateSelectedTotal().toFixed(2)}€)</span>
+                /> Payer la sélection <span className={styles.span}> {calculateSelectedTotal().toFixed(2)} €</span>
               </label>
             </div>
 
-            {!payAll && (
-              <div className={styles.selection}>
-                <h4 className={styles.h4}>Articles sélectionnés à payer :</h4>
-                {itemsWithIds.filter(item => (selectedQuantities[item.id] || 0) > 0).length === 0 ? (
-                  <p className={styles.p}>Aucun article sélectionné</p>
-                ) : (
-                  <ul>
-                    {itemsWithIds.filter(item => (selectedQuantities[item.id] || 0) > 0).map(item => (
-                      <li key={item.id} className={styles.p}>
-                        {item.name} x {selectedQuantities[item.id]} = {(item.price * selectedQuantities[item.id]).toFixed(2)}€
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <div><strong>Total sélectionné : <span className={styles.span}>{calculateSelectedTotal().toFixed(2)} €</span></strong></div>
-              </div>
-            )}
             <div className={styles.paymentMethods}>
-              <h4 className={styles.h5}>Répartir le paiement :</h4>
               {PAYMENT_METHODS.map(method => (
-                <div key={method} className={styles.paymentType}>
-                  <strong>{method} :&nbsp; </strong>
-                  <div className={styles.label2}>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={paymentAmounts[method]}
-                      onChange={(e) => handlePaymentAmountChange(method, e.target.value)}
-                      max={payAll ? calculateTotal() : calculateSelectedTotal()}
-                    />
-                    €
-                  </div>
+                <div key={method} className={styles.paymentMethod}>
+                  <label>{method} :</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={paymentAmounts[method]}
+                    onChange={(e) => handlePaymentAmountChange(method, e.target.value)}
+                  />
                 </div>
               ))}
             </div>
-            <div className={styles.paymentActions} style={{ marginTop: 20 }}>
-              <button
-                className={styles.payFullBtn}
-                onClick={() => processPayment(payAll)}
-                disabled={payAll ? calculateTotal() === 0 : calculateSelectedTotal() === 0}
-              >
-                Valider le paiement
-              </button>
-            </div>
+
+            <button
+              className={styles.btnValiderPaiement}
+              onClick={() => processPayment(payAll)}
+              disabled={
+                payAll
+                  ? Object.values(paymentAmounts).reduce((a, b) => a + b, 0) !== calculateTotal()
+                  : Object.values(paymentAmounts).reduce((a, b) => a + b, 0) !== calculateSelectedTotal()
+              }
+            >
+              Valider le paiement
+            </button>
           </>
         ) : (
           <>
             <Receipt items={paidItems} />
-            <div className={styles.paymentActions}>
-              <button className={styles.printBtn} onClick={printReceipt}>🖨️ Imprimer le ticket</button>
-              <button className={styles.closeBtn} onClick={closePaymentModal}>Fermer</button>
-            </div>
+            <button className={styles.printBtn} onClick={printReceipt}>Imprimer</button>
+            <button
+              className={styles.closeBtnReceipt}
+              onClick={() => {
+                closePaymentModal();
+              }}
+            >
+              Fermer
+            </button>
           </>
         )}
       </div>

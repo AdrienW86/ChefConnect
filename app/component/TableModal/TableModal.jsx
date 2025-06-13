@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@/app/Context/UserContext";
 import { useRestaurant } from "@/app/Context/RestaurantContext";
+import { v4 as uuidv4 } from 'uuid';
 import PaymentModal from "../PaymentModal/PaymentModal";
 import CategoryModal from "../CategoryModal/CategoryModal";
 import styles from "./tableModal.module.css";
@@ -15,8 +16,12 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     addItemToOrder,
     removeItemFromOrder,
     removeItemsFromOrder,
-    markAsServed,
   } = useRestaurant();
+
+  const [ticketNumber, setTicketNumber] = useState('');
+    useEffect(() => {
+      setTicketNumber(uuidv4());
+    }, []);
 
   const [categories, setCategories] = useState([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -173,18 +178,9 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                   <span className={styles.itemName}>
                     {item.name} (x{item.quantity})
                   </span>
-                  <span className={styles.itemStatus} style={{ color: "red" }}>
-                    En cours...
-                  </span>
                   <span className={styles.itemPrice}>
-                    {Number(item.price).toFixed(2)}€ (TVA {item.tva}% incluse)
+                    {(item.price * item.quantity).toFixed(2)}€
                   </span>
-                  <button
-                    className={styles.btnServi}
-                    onClick={() => markAsServed(item, selectedTable)}
-                  >
-                    v
-                  </button>
                 </div>
               ))}
               {mergedOrders("payée").map((item, index) => (
@@ -255,6 +251,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
       </div>
       {isPaymentModalOpen && (
         <PaymentModal
+          ticketNumber={ticketNumber}
           user={user}
           selectedTable={selectedTable}
           orders={currentOrders}

@@ -9,14 +9,14 @@
 
 .h2 {
     width: 100%;
-    font-size: 2rem;
+    font-size: 1.3rem;
     text-align: center;
-    padding: 30px;
+    padding: 20px;
 }
 
 .h3 {
-     width: 100%;
-    font-size: 1.5rem;
+    width: 100%;
+    font-size: 1.2rem;
     text-align: center;
     padding: 10px;
 }
@@ -27,17 +27,18 @@
     padding: 20px;
     width: 500px;
     margin: auto;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 
 .add {
-    font-size: 1.2rem;
-    padding: 20px;
+    font-size: 1rem;
+    padding: 8px;
+    width: 500px
 }
 
 .btn {
     margin-left: 20px;
-    font-size: 1.2rem;
+    font-size: 1rem;
     width: 200px;
 }
 
@@ -45,14 +46,14 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 50px;
-    width: 120px;
+    height: 40px;
+    width: 100px;
     padding: 10px;
     margin: 10px;
     border-radius: 8px;;
     border: 0px;
     color: white;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
 }
 
 .catBtnGreen {
@@ -97,8 +98,8 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    height: 250px;
-    width: 350px;
+    height: 200px;
+    width: 300px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -108,8 +109,8 @@
     margin: 20px;
     display: flex;
     flex-direction: column;
-    height: 250px;
-    width: 350px;
+    height: 200px;
+    width: 300px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;

@@ -209,6 +209,8 @@ const editProduct = async (productId, newProduct) => {
 
     // Mettre à jour localement le produit modifié
     setCategories(categories.map(cat => {
+      console.log("cat._id", cat._id);
+
       if (cat._id === selectedCategoryId) {
         return {
           ...cat,
@@ -253,8 +255,8 @@ const editProduct = async (productId, newProduct) => {
           </div>
 
           <ul className={styles.ul}>
-            {categories.map((cat) => (
-              <li className={styles.li} key={cat._id}>
+            {categories.map((cat, index) => (
+              <li className={styles.li} key={cat._id ?? index}>
                 {editingId === cat._id ? (
                   <section className={styles.modifyCard}>
                     <input
