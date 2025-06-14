@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "./recette.module.css";
 import { useUser } from "@/app/Context/UserContext";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const MONTH_NAMES = [
   "Janvier","Février","Mars","Avril","Mai","Juin",
@@ -66,6 +68,99 @@ export default function RecettesArchiveModal({ onClose }) {
     });
     return totals;
   };
+
+// Fonction d’export PDF, à appeler depuis un bouton si besoin
+  const exportToPdf = async (item, type) => {
+    
+    const input = document.getElementById("pdf-content");
+    if (!input) return;
+
+   const canvas = await html2canvas(input, {
+  scale: 2,
+  ignoreElements: (element) => element.classList.contains('no-print')
+});
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
+    pdf.save(`rapport-${type}-${item.year || item.month || item.day}.pdf`);
+  };
+
+
+  const sendToComptable = async (item, type, user) => {
+  const input = document.getElementById("pdf-content");
+  if (!input) return;
+console.log(user)
+  const canvas = await html2canvas(input, {
+    scale: 2,
+    ignoreElements: (element) => element.classList.contains("no-print"),
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const imgProps = pdf.getImageProperties(imgData);
+  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+  pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
+
+  // ➤ Obtenir le PDF en base64 pur
+  const pdfBase64Full = pdf.output("datauristring"); // data:application/pdf;base64,xxx
+  const pdfBase64 = pdfBase64Full.split(",")[1]; // enlever le préfixe
+
+
+
+  console.log({
+  name: user.username,
+  email: "adrien_weiss@outlook.fr",
+  subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
+  message: "Voici le rapport PDF généré automatiquement.",
+  pdfBase64,
+  filename: `rapport-${type}-${item.year || item.month || item.day}.pdf`
+});
+
+
+
+
+  try {
+    const res = await fetch("/api/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: user.username ,
+        email: "adrien_weiss@outlook.fr",
+        subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
+        message: "Voici le rapport PDF généré automatiquement.",
+        pdfBase64, // base64 sans préfixe
+        filename: `rapport-${type}-${item.year || item.month || item.day}.pdf`
+      }),
+    });
+
+    const result = await res.json();
+    if (res.ok) {
+      alert("Le rapport a été envoyé à la comptable.");
+    } else {
+      alert("Erreur : " + result.message);
+    }
+  } catch (err) {
+    alert("Erreur serveur : " + err.message);
+  }
+};
+
+
+
+
+
+
+
+
+
 
   const DetailModal = ({ item, type, onClose }) => {
     const getPaymentsTotal = (payments) =>
@@ -135,8 +230,8 @@ export default function RecettesArchiveModal({ onClose }) {
 
     return (
       <div className={styles.detailOverlay} onClick={onClose}>
-        <div className={styles.detailContent} onClick={(e) => e.stopPropagation()}>
-          <button className={styles.closeButton} onClick={onClose}>
+        <div id="pdf-content" className={styles.detailContent} onClick={(e) => e.stopPropagation()}>
+          <button  className={styles.closeButton} onClick={onClose}>
             ✕
           </button>
           <h3 className={styles.h3}>
@@ -146,13 +241,16 @@ export default function RecettesArchiveModal({ onClose }) {
               : item.year || item.day || ""}
           </h3>
           <p className={styles.pDetails}>
-            <strong className={styles.underline2}>Chiffre d'affaires :</strong><span className={styles.totalRevenue}> {totalRevenue.toFixed(2)} € </span> 
+            <strong className={styles.underline2}>Chiffre d'affaires :</strong>
+            <span className={styles.totalRevenue}> {totalRevenue.toFixed(2)} € </span> 
           </p>
            <p className={styles.pDetails}>
-            <strong className={styles.underline2}>TVA :</strong> <span className={styles.totalTvaReel}> {totalTVAReelle.toFixed(2)} €</span>
+            <strong className={styles.underline2}>TVA :</strong>
+             <span className={styles.totalTvaReel}> {totalTVAReelle.toFixed(2)} €</span>
           </p>
             <p className={styles.pDetails2}>
-            <strong className={styles.underline2}>Bénéfices :</strong> <span className={styles.totalRevenue} >{(totalRevenue - totalTVAReelle).toFixed(2)} € </span>
+            <strong className={styles.underline2}>Bénéfices :</strong> 
+            <span className={styles.totalRevenue} >{(totalRevenue - totalTVAReelle).toFixed(2)} € </span>
           </p>
 
           <div>
@@ -191,7 +289,23 @@ export default function RecettesArchiveModal({ onClose }) {
               </ul>
             </div>
           )}
+        
         </div>
+          <button
+            className={styles.pdfButton}
+            onClick={() => exportToPdf(item, type)}
+            style={{ marginTop: "1em" }}
+          >
+            Exporter en PDF
+          </button>
+          <button
+  className={styles.sendButton}
+  onClick={() => sendToComptable(item, type, user)}
+  style={{ marginTop: "0.5em", backgroundColor: "#2a8", color: "white", padding: "0.5em", border: "none", borderRadius: "5px" }}
+>
+  Envoyer à la comptable
+</button>
+
       </div>
     );
   };

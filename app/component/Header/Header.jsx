@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import ParamsCard from "../ParamsCard/ParamsCard";
 import { useUser } from "@/app/Context/UserContext";
 import RecettesModal from "../RecetteModal/RecetteModal";
+import ComptabilityDocument from "../ComptabilityDocument/ComptabilityDocument";
 import RecetteArchive from "../RecetteArchive/RecetteArchive";
 import ComptaEmailForm from "../Comptability/Comptability";
 import Profil from '../Profil/Profil'
@@ -18,6 +19,55 @@ export default function Dashboard() {
   const [isRecetteOpen, setIsRecetteOpen] = useState(false);
   const [isArchiveRecetteOpen, setIsArchiveRecetteOpen] = useState(false);
   const [isComptabilityOpen, setIsComptabilityOpen] = useState(false)
+    const [isComptabilityDocumentOpen, setIsComptabilityDocumentOpen] = useState(false)
+
+   const [file, setFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const sendFile = async () => {
+    if (!file) {
+      alert("Merci de sélectionner un fichier.");
+      return;
+    }
+
+    // Lire le fichier en base64
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result.split(",")[1]; // On enlève data:xxx;base64,
+
+      try {
+        const res = await fetch("/api/email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: user.name,
+            email: user.email,
+            subject: `Fichier envoyé : ${file.name}`,
+            message: "Voici un fichier envoyé par l'utilisateur.",
+            pdfBase64: base64,
+            filename: file.name,
+          }),
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          alert("Fichier envoyé avec succès !");
+        } else {
+          alert("Erreur : " + result.message);
+        }
+      } catch (err) {
+        alert("Erreur serveur : " + err.message);
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -33,6 +83,10 @@ export default function Dashboard() {
 
     const toggleComptability = () => {
     setIsComptabilityOpen(!isComptabilityOpen);
+  };
+
+   const toggleComptabilityDocument = () => {
+    setIsComptabilityDocumentOpen(!isComptabilityOpen);
   };
 
   const handleLogout = async () => {
@@ -100,8 +154,10 @@ export default function Dashboard() {
             <div className={styles.profil2}>
               <h3 className={styles.h3}> Comptabilité </h3>
                 <div className={styles.boxBtn}>
-                 <button className={styles.paramsButton} onClick={toggleLink}> Envoyer à la comptable
+                 <button className={styles.paramsButton} onClick={() =>setIsComptabilityDocumentOpen(true)}> 
+                  Envoyer à la comptable
                   </button>
+                   {isComptabilityDocumentOpen && <ComptabilityDocument user={user} onClose={() => setIsComptabilityDocumentOpen(false)} />}
                   <button className={styles.paramsButton} onClick={() =>setIsComptabilityOpen(true)}> 
                     Paramètres comptable
                   </button>

@@ -91,8 +91,9 @@
 }
 
 .detailContent {
-  background-color: rgb(29, 85, 85);
-  padding: 20px;
+  color: black;
+  padding: 30px 50px;
+  background-color: rgb(255, 255, 255);
   width: 100vh;
   height: 100vh;
   overflow-y: auto;
@@ -141,21 +142,27 @@
 }
 
 .h3 {
-  margin: 30px auto;
-  width: 80%;
-  padding: 8px 30px;
+  margin: 30px auto 100px auto;
+  width: 96%;
+  font-weight: bold;
+  font-size: 2rem;
+  padding: 8px 40px;
   text-align: center;
-  border: 2px solid white;
+  border: 2px solid rgb(0, 0, 0);
 }
 
 .h7 {
+  font-weight: bold;
+  font-size: 1.5rem;
   text-decoration: underline;
   margin: 50px 20px 20px 20px;
 }
 
 .h4 {
+  font-size: 1.5rem;
   text-decoration: underline;
   margin: 20px;
+  font-weight: bold;
 }
 
 .ul {
@@ -164,20 +171,24 @@
 }
 
 .li {
+  font-size: 1.5rem;
   margin: 10px;
 }
 
 .totalRevenue {
   font-weight: bold;
-  color: rgb(2, 255, 2)
+  font-size: 1.5rem;
+  color: rgb(1, 100, 1)
 }
 
 .totalTvaReel {
+  font-size: 1.5rem;
   font-weight: bold;
-  color: rgb(255, 3, 3)
+  color: rgb(216, 6, 6)
 }
 
 .pDetails {
+  font-size: 1.5rem;
   margin: 10px 20px;
 }
 
@@ -186,12 +197,18 @@
 }
 
 .underline {
-  letter-spacing: 0.1em;
   text-decoration: underline;
 }
 
 .underline2 {
-  letter-spacing: 0.1em;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   text-decoration: underline;
 }
+
+.pdfButton {
+  padding: 10px;
+  bottom: 80px;
+  font-size: 1.5rem;
+  position: absolute;
+}
+
