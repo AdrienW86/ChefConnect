@@ -120,7 +120,7 @@ console.log(user)
         email: user.comptabilityEmail,
         subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
         message: "Voici le rapport PDF généré automatiquement.",
-        pdfBase64, // base64 sans préfixe
+        pdfBase64, 
         filename: `rapport-${type}-${item.year || item.month || item.day}.pdf`
       }),
     });
