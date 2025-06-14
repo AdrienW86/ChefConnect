@@ -1,6 +1,15 @@
 import sgMail from "@sendgrid/mail";
 sgMail.setApiKey(process.env.SEND_GRID_KEY);
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb', 
+    },
+  },
+};
+
+
 export async function POST(req) {
   const body = await req.json();
 
