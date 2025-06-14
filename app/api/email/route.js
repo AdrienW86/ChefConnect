@@ -44,7 +44,6 @@ const sendGridMail = {
     : undefined,
 };
 
-
   if (pdfBase64) {
     sendGridMail.attachments = [
       {
