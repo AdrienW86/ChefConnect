@@ -14,10 +14,9 @@ console.log(user)
       return;
     }
 
-    // Lire le fichier en base64
     const reader = new FileReader();
     reader.onload = async () => {
-      const base64 = reader.result.split(",")[1]; // On enlève data:xxx;base64,
+      const base64 = reader.result.split(",")[1]; 
 
       try {
         const res = await fetch("/api/email", {
@@ -27,7 +26,7 @@ console.log(user)
           },
           body: JSON.stringify({
             name: user.username,
-            email: user.email,
+            email: user.comptabilityEmail,
             subject: `Fichier envoyé : ${file.name}`,
             message: "Voici un fichier envoyé par l'utilisateur.",
             pdfBase64: base64,
@@ -52,15 +51,10 @@ console.log(user)
   return (
     <div className={styles.modal}>
        <button onClick={onClose} className={styles.closeBtn}> X </button>
-      <div className={styles.modalContent}>
-       
-      <input type="file" onChange={handleFileChange} className={styles.input}/>
-      <button className={styles.sendBtn} onClick={sendFile}>Envoyer le fichier à la comptable</button>
+      <div className={styles.modalContent}>     
+        <input type="file" onChange={handleFileChange} className={styles.input}/>
+        <button className={styles.sendBtn} onClick={sendFile}>Envoyer le fichier à la comptable</button>
       </div>
     </div>
   );
 }
-
-
-
-

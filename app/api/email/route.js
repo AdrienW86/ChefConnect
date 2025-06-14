@@ -27,7 +27,7 @@ export async function POST(req) {
     .replace(/<(?!br\s*\/?)[^>]+>/g, "");
 
 const sendGridMail = {
-  to: process.env.EMAIL_CLIENT,
+  to: email,
   from: process.env.EMAIL_MASTER,
   subject: subject,
   text: message,

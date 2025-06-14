@@ -205,10 +205,25 @@
   text-decoration: underline;
 }
 
+.btnContainer {
+  position: absolute;
+  bottom: 80px;
+  display: flex;
+}
+
 .pdfButton {
   padding: 10px;
-  bottom: 80px;
+  width: 300px;
+  margin-right: 10px;
   font-size: 1.5rem;
-  position: absolute;
+}
+
+.sendButton {
+  padding: 10px;
+  font-size: 1.5rem;
+  color: white;
+  width: 300px;
+   margin-left: 10px;
+  background-color: #2a8
 }
 

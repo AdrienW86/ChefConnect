@@ -10,7 +10,6 @@ export default function ComptaEmailForm({onClose}) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Met à jour le champ email une fois que le user est chargé
   useEffect(() => {
     console.log(user)
     if (user?.comptabilityEmail) {
@@ -36,7 +35,7 @@ export default function ComptaEmailForm({onClose}) {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setUser(data.user); // Met à jour l’utilisateur global
+        setUser(data.user); 
         setMessage("Email comptable mis à jour !");
       } else {
         setMessage("Erreur : " + (data.message || "inconnue"));
@@ -70,15 +69,13 @@ export default function ComptaEmailForm({onClose}) {
             required
           />
           {message && (
-  <p className={message.startsWith("Erreur") ? styles.error : styles.success}>
-    {message}
-  </p>
-)}
-
+            <p className={message.startsWith("Erreur") ? styles.error : styles.success}>
+              {message}
+            </p>
+          )}
           <button className={styles.modify} type="submit" disabled={submitting}>
             {submitting ? "Mise à jour..." : "Mettre à jour"}
-          </button>
-        
+          </button>        
         </form>
         <button className={styles.closeBtn} onClick={onClose}> Fermer </button>
       </div>

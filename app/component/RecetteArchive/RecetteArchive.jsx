@@ -69,7 +69,6 @@ export default function RecettesArchiveModal({ onClose }) {
     return totals;
   };
 
-// Fonction d’export PDF, à appeler depuis un bouton si besoin
   const exportToPdf = async (item, type) => {
     
     const input = document.getElementById("pdf-content");
@@ -90,7 +89,6 @@ export default function RecettesArchiveModal({ onClose }) {
     pdf.save(`rapport-${type}-${item.year || item.month || item.day}.pdf`);
   };
 
-
   const sendToComptable = async (item, type, user) => {
   const input = document.getElementById("pdf-content");
   if (!input) return;
@@ -108,23 +106,8 @@ console.log(user)
 
   pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
 
-  // ➤ Obtenir le PDF en base64 pur
-  const pdfBase64Full = pdf.output("datauristring"); // data:application/pdf;base64,xxx
-  const pdfBase64 = pdfBase64Full.split(",")[1]; // enlever le préfixe
-
-
-
-  console.log({
-  name: user.username,
-  email: "adrien_weiss@outlook.fr",
-  subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
-  message: "Voici le rapport PDF généré automatiquement.",
-  pdfBase64,
-  filename: `rapport-${type}-${item.year || item.month || item.day}.pdf`
-});
-
-
-
+  const pdfBase64Full = pdf.output("datauristring"); 
+  const pdfBase64 = pdfBase64Full.split(",")[1]; 
 
   try {
     const res = await fetch("/api/email", {
@@ -134,7 +117,7 @@ console.log(user)
       },
       body: JSON.stringify({
         name: user.username ,
-        email: "adrien_weiss@outlook.fr",
+        email: user.comptabilityEmail,
         subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
         message: "Voici le rapport PDF généré automatiquement.",
         pdfBase64, // base64 sans préfixe
@@ -152,15 +135,6 @@ console.log(user)
     alert("Erreur serveur : " + err.message);
   }
 };
-
-
-
-
-
-
-
-
-
 
   const DetailModal = ({ item, type, onClose }) => {
     const getPaymentsTotal = (payments) =>
@@ -219,7 +193,6 @@ console.log(user)
       }
     })();
 
-    // Calcul de la TVA réelle (HT) totale, pas TTC
     const totalTVAReelle = tvaTotals
       ? Object.entries(tvaTotals).reduce((acc, [rate, amount]) => {
           const rateNum = Number(rate);
@@ -273,7 +246,6 @@ console.log(user)
               </li>
             </ul>
           </div>
-
           {tvaTotals && Object.keys(tvaTotals).length > 0 && (
             <div style={{ marginTop: "1em" }}>
               <h4 className={styles.h7}>Totaux TVA :</h4>
@@ -288,24 +260,22 @@ console.log(user)
                 })}
               </ul>
             </div>
-          )}
-        
+          )}       
         </div>
-          <button
+          <div className={styles.btnContainer}>
+            <button
             className={styles.pdfButton}
             onClick={() => exportToPdf(item, type)}
-            style={{ marginTop: "1em" }}
           >
             Exporter en PDF
           </button>
           <button
-  className={styles.sendButton}
-  onClick={() => sendToComptable(item, type, user)}
-  style={{ marginTop: "0.5em", backgroundColor: "#2a8", color: "white", padding: "0.5em", border: "none", borderRadius: "5px" }}
->
-  Envoyer à la comptable
-</button>
-
+            className={styles.sendButton}
+            onClick={() => sendToComptable(item, type, user)}
+          >
+            Envoyer à la comptable
+          </button>
+          </div>
       </div>
     );
   };
