@@ -31,7 +31,7 @@ const sendGridMail = {
   from: process.env.EMAIL_MASTER,
   subject: subject,
   text: message,
-  html: contenu,  // contenu HTML nettoyé comme tu fais déjà
+  html: contenu, 
   attachments: pdfBase64
     ? [
         {

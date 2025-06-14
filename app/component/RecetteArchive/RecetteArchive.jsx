@@ -117,7 +117,7 @@ console.log(user)
       },
       body: JSON.stringify({
         name: user.username ,
-        email: user.comptabilityEmail,
+        email: user.email,
         subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
         message: "Voici le rapport PDF généré automatiquement.",
         pdfBase64, 
