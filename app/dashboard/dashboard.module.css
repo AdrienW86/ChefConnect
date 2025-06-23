@@ -3,8 +3,8 @@
 }
 
 .time {
-    padding: 14px;
-    height: 5vh;
+    padding: 5px 14px;
+    height: 30px;
     font-weight: bold;
     display: flex;
     justify-content: space-between;
@@ -14,7 +14,7 @@
 
 .main {
     display: flex;
-    height: 85vh;
+    height: 80vh;
     background-color: rgb(29, 85, 85);
 }
 

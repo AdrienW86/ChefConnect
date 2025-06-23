@@ -40,9 +40,9 @@
 }
 
 .item {
-    padding: 12px;
+    padding: 4px;
     margin: 10px;
-    width: 300px;
+    width: 200px;
     color: rgb(51, 51, 51);
     border-radius: 8px;;
     background-color: rgb(255, 255, 255);
@@ -53,6 +53,7 @@
     font-weight: bold;
     margin-bottom: 8px;
     display: flex;
+    font-size: 0.8rem;
     justify-content: center;
 }
 
@@ -72,16 +73,17 @@
 }
 
 .price {
-    margin-left: 8px;
+    margin-left: 2px;
     color: green;
 }
 
 .smallBtnGreen, .smallBtnRed {
     width: 100px;
     padding: 8px;
-    margin: 10px;
+    margin: 5px 10px;
     border: 1px solid white;
     border-radius: 8px;
+    font-size: 0.8em;
     color: white;
 }
 
@@ -95,13 +97,9 @@
 
 .h3 ,.h4 {
     width: 100%;
-    font-size: 2rem;
+    font-size: 1rem;
     text-align: center;
     padding: 10px;
-}
-
-.h4 {
-    font-size: 1.5rem;
 }
 
 .form {
@@ -147,10 +145,10 @@
 }
 
 .li {
-    margin: 20px;
+    margin: 10px;
     display: flex;
     flex-direction: column;
-    width: 300px;
+    width: 200px;
     margin-bottom: 0.5rem;
     padding: 20px;
     border: 1px solid #ccc;

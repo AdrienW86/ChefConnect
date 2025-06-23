@@ -208,22 +208,24 @@
 .btnContainer {
   position: absolute;
   bottom: 80px;
+  right : 30px;
   display: flex;
+  flex-direction: column;
 }
 
 .pdfButton {
   padding: 10px;
-  width: 300px;
-  margin-right: 10px;
-  font-size: 1.5rem;
+  width: 250px;
+  margin: 10px;
+  font-size: 1rem;
 }
 
 .sendButton {
   padding: 10px;
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: white;
-  width: 300px;
-   margin-left: 10px;
+  width: 250px;
+  margin: 10px;
   background-color: #2a8
 }
 

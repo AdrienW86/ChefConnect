@@ -9,25 +9,25 @@
 
 .h2 {
     width: 100%;
-    font-size: 1.3rem;
+    font-size: 1rem;
     text-align: center;
     padding: 20px;
 }
 
 .h3 {
     width: 100%;
-    font-size: 1.2rem;
+    font-size: 0.8rem;
     text-align: center;
-    padding: 10px;
+    padding: 2px;
 }
 
 .input {
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 10px;
     width: 500px;
     margin: auto;
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .add {
@@ -46,14 +46,14 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 40px;
-    width: 100px;
-    padding: 10px;
-    margin: 10px;
+    height: 30px;
+    width: 70px;
+    padding: 2px;
+    margin: 2px 5px;
     border-radius: 8px;;
     border: 0px;
     color: white;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
 }
 
 .catBtnGreen {
@@ -94,12 +94,12 @@
 }
 
 .card {
-    margin: 20px;
+    margin: 10px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    height: 200px;
-    width: 300px;
+    height: 120px;
+    width: 200px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -108,9 +108,10 @@
 .modifyCard {
     margin: 20px;
     display: flex;
-    flex-direction: column;
-    height: 200px;
-    width: 300px;
+    flex-wrap: wrap;
+    justify-content: center;
+    height: 120px;
+    width: 200px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -118,16 +119,21 @@
 
 .modifyInput {
     padding: 8px;
-    margin: 20px 0;
+    margin: 10px 0;
 }
 
 .modifyBtnGreen, .modifyBtnRed {
-    padding: 8px;
-    width: 150px;
-    margin: 10px auto;
-    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 30px;
+    width: 70px;
+    padding: 2px;
+    margin:  5px;
+    border-radius: 8px;;
     border: 0px;
-    border-radius: 8px;
+    color: white;
+    font-size: 0.7rem;
 }
 
 .modifyBtnGreen {
