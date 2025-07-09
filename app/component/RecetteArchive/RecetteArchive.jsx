@@ -69,25 +69,27 @@ export default function RecettesArchiveModal({ onClose }) {
     return totals;
   };
 
-  const exportToPdf = async (item, type) => {
-    
-    const input = document.getElementById("pdf-content");
-    if (!input) return;
+ const exportToPdf = async (item, type) => {
+  const input = document.getElementById("pdf-content");
+  if (!input) return;
 
-   const canvas = await html2canvas(input, {
-  scale: 2,
-  ignoreElements: (element) => element.classList.contains('no-print')
-});
+  const canvas = await html2canvas(input, {
+    scale: 1, // réduire la résolution pour diminuer la taille
+    ignoreElements: (element) => element.classList.contains('no-print'),
+  });
 
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+  // Convertir en JPEG avec compression
+  const imgData = canvas.toDataURL("image/jpeg", 0.6);
 
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
-    pdf.save(`rapport-${type}-${item.year || item.month || item.day}.pdf`);
-  };
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const imgProps = pdf.getImageProperties(imgData);
+  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+  pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pdfHeight);
+  pdf.save(`rapport-${type}-${item.year || item.month || item.day}.pdf`);
+};
+
 
   const sendToComptable = async (item, type, user) => {
   const input = document.getElementById("pdf-content");
