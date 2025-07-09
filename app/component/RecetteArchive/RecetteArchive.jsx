@@ -69,61 +69,67 @@ export default function RecettesArchiveModal({ onClose }) {
     return totals;
   };
 
- const exportToPdf = async (item, type) => {
-  const input = document.getElementById("pdf-content");
-  if (!input) return;
+ const exportToPdf = async (item, type, textContent) => {
+   const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const margin = 10;
+  const maxLineWidth = pageWidth - margin * 2;
 
-  const canvas = await html2canvas(input, {
-    scale: 1, // réduire la résolution pour diminuer la taille
-    ignoreElements: (element) => element.classList.contains('no-print'),
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(12);
+
+  const lines = pdf.splitTextToSize(textContent, maxLineWidth);
+  let y = margin;
+
+  lines.forEach((line) => {
+    if (y > pdf.internal.pageSize.getHeight() - margin) {
+      pdf.addPage();
+      y = margin;
+    }
+    pdf.text(line, margin, y);
+    y += 7; // hauteur ligne
   });
 
-  // Convertir en JPEG avec compression
-  const imgData = canvas.toDataURL("image/jpeg", 0.6);
-
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
-
-  pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pdfHeight);
   pdf.save(`rapport-${type}-${item.year || item.month || item.day}.pdf`);
 };
 
 
-  const sendToComptable = async (item, type, user) => {
-  const input = document.getElementById("pdf-content");
-  if (!input) return;
-console.log(user)
-  const canvas = await html2canvas(input, {
-    scale: 2,
-    ignoreElements: (element) => element.classList.contains("no-print"),
+
+  const sendToComptable = async (item, type, user, textContent) => {
+ const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const margin = 10;
+  const maxLineWidth = pageWidth - margin * 2;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(12);
+
+  const lines = pdf.splitTextToSize(textContent, maxLineWidth);
+  let y = margin;
+
+  lines.forEach((line) => {
+    if (y > pdf.internal.pageSize.getHeight() - margin) {
+      pdf.addPage();
+      y = margin;
+    }
+    pdf.text(line, margin, y);
+    y += 7;
   });
 
-  const imgData = canvas.toDataURL("image/png");
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
-
-  pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
-
-  const pdfBase64Full = pdf.output("datauristring"); 
-  const pdfBase64 = pdfBase64Full.split(",")[1]; 
+  const pdfBase64Full = pdf.output("datauristring");
+  const pdfBase64 = pdfBase64Full.split(",")[1];
 
   try {
     const res = await fetch("/api/email", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: user.username ,
+        name: user.username,
         email: user.email,
         subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
         message: "Voici le rapport PDF généré automatiquement.",
-        pdfBase64, 
-        filename: `rapport-${type}-${item.year || item.month || item.day}.pdf`
+        pdfBase64,
+        filename: `rapport-${type}-${item.year || item.month || item.day}.pdf`,
       }),
     });
 
@@ -131,7 +137,7 @@ console.log(user)
     if (res.ok) {
       alert("Le rapport a été envoyé à la comptable.");
     } else {
-      alert("Erreur : " + result.message);
+      alert("Erreur : " + (result.message || "Échec de l'envoi."));
     }
   } catch (err) {
     alert("Erreur serveur : " + err.message);
