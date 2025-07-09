@@ -3,8 +3,8 @@ import User from "@/app/models/User";
 
 export async function POST(req, context) {
   try {
-     await connectToDatabase();
-   const params = await context.params; 
+    await connectToDatabase();
+    const params = context.params;
     const tableNumber = parseInt(params.tableNumber, 10);
     const body = await req.json();
     const { userId, items } = body;
@@ -16,7 +16,6 @@ export async function POST(req, context) {
       );
     }
 
-   
     const user = await User.findById(userId);
     if (!user)
       return new Response(
@@ -47,9 +46,17 @@ export async function POST(req, context) {
     });
 
     order.total = order.items.reduce((acc, i) => acc + i.price * i.quantity, 0);
-    if (order.items.length === 0) user.orders.splice(orderIndex, 1);
 
-    await user.save();
+    if (order.items.length === 0) {
+      user.orders.splice(orderIndex, 1);
+    }
+
+    // ✅ Mise à jour directe sans conflit de version
+    await User.findOneAndUpdate(
+      { _id: user._id },
+      { $set: { orders: user.orders } },
+      { new: true }
+    );
 
     return new Response(
       JSON.stringify({ success: true, order: order.items.length ? order : null }),
@@ -63,3 +70,4 @@ export async function POST(req, context) {
     );
   }
 }
+

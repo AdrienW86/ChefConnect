@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef } from "react";
+import styles from './receipt.module.css'
 
 export default function ReceiptPrinter({ order, onClose }) {
   const printRef = useRef();
@@ -83,7 +84,7 @@ export default function ReceiptPrinter({ order, onClose }) {
       </div>
 
       <div style={{ marginTop: "10px", textAlign: "center" }}>
-        <button onClick={handlePrint}>🖨️ Imprimer</button>
+        <button className={styles.print} onClick={handlePrint}>🖨️ Imprimer</button>
         <button onClick={onClose}>❌ Fermer</button>
       </div>
     </div>

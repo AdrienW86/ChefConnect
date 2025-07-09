@@ -4,7 +4,7 @@ sgMail.setApiKey(process.env.SEND_GRID_KEY);
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb', 
+      sizeLimit: '25mb', 
     },
   },
 };
