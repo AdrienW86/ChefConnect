@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import DetailModal from "../DetailsModal/DetailsModal";
 import styles from "./recette.module.css";
 import { useUser } from "@/app/Context/UserContext";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import "jspdf-autotable";
 
 const MONTH_NAMES = [
   "Janvier","Février","Mars","Avril","Mai","Juin",
@@ -69,56 +70,213 @@ export default function RecettesArchiveModal({ onClose }) {
     return totals;
   };
 
- const exportToPdf = async (item, type, textContent) => {
-   const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const margin = 10;
-  const maxLineWidth = pageWidth - margin * 2;
+  function createPdfDoc(item, type) {
+  const getPaymentsTotal = (payments) =>
+    Object.values(payments || {}).reduce((s, v) => s + (v || 0), 0);
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
+  const calcPaymentsMonth = (m) => {
+    const totals = { card: 0, cash: 0, check: 0, ticket: 0 };
+    m.days?.forEach((d) => {
+      const p = d.payments || {};
+      totals.card += p.card || 0;
+      totals.cash += p.cash || 0;
+      totals.check += p.check || 0;
+      totals.ticket += p.ticket || 0;
+    });
+    return totals;
+  };
 
-  const lines = pdf.splitTextToSize(textContent, maxLineWidth);
-  let y = margin;
+  const calcPaymentsYear = (y) => {
+    const totals = { card: 0, cash: 0, check: 0, ticket: 0 };
+    y.months?.forEach((m) => {
+      const p = m.payments || calcPaymentsMonth(m);
+      Object.entries(p).forEach(([k, v]) => (totals[k] += v || 0));
+    });
+    return totals;
+  };
 
-  lines.forEach((line) => {
-    if (y > pdf.internal.pageSize.getHeight() - margin) {
-      pdf.addPage();
-      y = margin;
+  const { payments, totalRevenue, tvaTotals } = (() => {
+    switch (type) {
+      case "jour":
+        return {
+          payments: item.payments || {},
+          totalRevenue: item.totalRevenue || 0,
+          tvaTotals: item.tva
+            ? Object.fromEntries(
+                Object.entries(item.tva).map(([k, v]) => [
+                  k.replace("tva", "").replace("_", "."),
+                  v,
+                ])
+              )
+            : {},
+        };
+      case "mois":
+        return {
+          payments: item.payments || calcPaymentsMonth(item),
+          totalRevenue: totalMonth(item),
+          tvaTotals: calcTvaTotalMonth(item),
+        };
+      case "année":
+        return {
+          payments: item.payments || calcPaymentsYear(item),
+          totalRevenue: totalYear(item),
+          tvaTotals: calcTvaTotalYear(item),
+        };
+      default:
+        return { payments: {}, totalRevenue: 0, tvaTotals: {} };
     }
-    pdf.text(line, margin, y);
-    y += 7; // hauteur ligne
+  })();
+
+  const totalTVAReelle = tvaTotals
+    ? Object.entries(tvaTotals).reduce((acc, [rate, amount]) => {
+        const rateNum = Number(rate);
+        const realTVA = (amount * rateNum) / (100 + rateNum);
+        return acc + realTVA;
+      }, 0)
+    : 0;
+
+  const doc = new jsPDF();
+
+  const titleDate =
+    type === "mois" && item.month
+      ? MONTH_NAMES[item.month - 1]
+      : item.year || item.day || "";
+
+  // Ajout du contenu (titre, tableaux, etc.) → copie de ta fonction
+  doc.setFontSize(16);
+  doc.text(`Détails ${type} ${titleDate}`, 14, 20);
+
+ function drawKeyValueTable(item, startX, startY) {
+  const rowHeight = 8;
+  const col1Width = 90;
+  const col2Width = 40;
+  const valueOffsetRight = 20; // nouveau décalage vers la droite
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+
+  let y = startY;
+
+  item.forEach(([key, value]) => {
+    doc.text(key, startX + 2, y + 6);
+    doc.text(value, startX + col1Width + valueOffsetRight, y + 6, { align: "right" });
+
+    doc.line(startX, y, startX + col1Width + col2Width + valueOffsetRight - 20, y); // ajuster la ligne (moins offset)
+    doc.line(startX, y + rowHeight, startX + col1Width + col2Width + valueOffsetRight - 20, y + rowHeight);
+    doc.line(startX, y, startX, y + rowHeight);
+    doc.line(startX + col1Width, y, startX + col1Width, y + rowHeight);
+    doc.line(startX + col1Width + col2Width, y, startX + col1Width + col2Width, y + rowHeight);
+
+    y += rowHeight;
   });
 
-  pdf.save(`rapport-${type}-${item.year || item.month || item.day}.pdf`);
-};
+  return y;
+}
+
+  const summaryData = [
+    ["Chiffre d'affaires", `${totalRevenue.toFixed(2)} €`],
+    ["TVA", `${totalTVAReelle.toFixed(2)} €`],
+    ["Bénéfices", `${(totalRevenue - totalTVAReelle).toFixed(2)} €`],
+  ];
+
+  let currentY = drawKeyValueTable(summaryData, 14, 30) + 10;
+
+  const paymentsData = Object.entries(payments).map(([key, value]) => [
+    key === "card"
+      ? "Carte bancaire (CB)"
+      : key === "cash"
+      ? "Espèces"
+      : key === "check"
+      ? "Chèque"
+      : "Tickets",
+    `${(value || 0).toFixed(2)} €`,
+  ]);
+  paymentsData.push(["Total paiements", `${getPaymentsTotal(payments).toFixed(2)} €`]);
+
+  currentY = drawKeyValueTable(paymentsData, 14, currentY) + 10;
+
+  if (tvaTotals && Object.keys(tvaTotals).length > 0) {
+    const tvaData = Object.entries(tvaTotals).map(([rate, amount]) => {
+      const realTVA = (amount * Number(rate)) / (100 + Number(rate));
+      return [`TVA ${rate} %`, `${realTVA.toFixed(2)} €`, `(sur ${amount.toFixed(2)} € TTC)`];
+    });
+
+    const rowHeight = 8;
+    const colWidths = [50, 50, 70];
+    let y = currentY;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+
+    const headers = ["Taux TVA", "Montant TVA réelle", "Base TTC"];
+    headers.forEach((h, i) => {
+      doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0) + 2, y + 6);
+    });
+
+    doc.line(14, y, 14 + colWidths.reduce((a, b) => a + b, 0), y);
+    doc.line(14, y + rowHeight, 14 + colWidths.reduce((a, b) => a + b, 0), y + rowHeight);
+    let xPos = 14;
+    doc.line(xPos, y, xPos, y + rowHeight);
+    colWidths.forEach((w) => {
+      xPos += w;
+      doc.line(xPos, y, xPos, y + rowHeight);
+    });
+
+    y += rowHeight;
+
+    doc.setFont("helvetica", "normal");
+    tvaData.forEach((row) => {
+      let x = 14;
+      row.forEach((cell, i) => {
+        doc.text(cell, x + 2, y + 6);
+        x += colWidths[i];
+      });
+
+      doc.line(14, y, 14 + colWidths.reduce((a, b) => a + b, 0), y);
+      doc.line(14, y + rowHeight, 14 + colWidths.reduce((a, b) => a + b, 0), y + rowHeight);
+
+      x = 14;
+      doc.line(x, y, x, y + rowHeight);
+      colWidths.forEach((w) => {
+        x += w;
+        doc.line(x, y, x, y + rowHeight);
+      });
+
+      y += rowHeight;
+    });
+  }
+
+  return doc;
+}
+
+ 
+
+function exportToPdf(item, type) {
+  const doc = createPdfDoc(item, type);
+  const titleDate =
+    type === "mois" && item.month
+      ? MONTH_NAMES[item.month - 1]
+      : item.year || item.day || "";
+
+  doc.save(`rapport_${type}_${titleDate || ""}.pdf`);
+}
 
 
 
-  const sendToComptable = async (item, type, user, textContent) => {
- const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const margin = 10;
-  const maxLineWidth = pageWidth - margin * 2;
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
+async function sendToComptable(item, type, user) {
+  const doc = createPdfDoc(item, type);
 
-  const lines = pdf.splitTextToSize(textContent, maxLineWidth);
-  let y = margin;
+  // pdf en base64 sans le préfixe "data:application/pdf;base64,"
+  const pdfBase64 = doc.output("datauristring").split(",")[1];
 
-  lines.forEach((line) => {
-    if (y > pdf.internal.pageSize.getHeight() - margin) {
-      pdf.addPage();
-      y = margin;
-    }
-    pdf.text(line, margin, y);
-    y += 7;
-  });
+  const filename =
+    `rapport_${type}_` +
+    (type === "mois" && item.month
+      ? MONTH_NAMES[item.month - 1]
+      : item.year || item.day || "") +
+    ".pdf";
 
-  const pdfBase64Full = pdf.output("datauristring");
-  const pdfBase64 = pdfBase64Full.split(",")[1];
-
+  // Envoi via fetch à ton API mail
   try {
     const res = await fetch("/api/email", {
       method: "POST",
@@ -126,23 +284,24 @@ export default function RecettesArchiveModal({ onClose }) {
       body: JSON.stringify({
         name: user.username,
         email: user.email,
-        subject: `Rapport ${type} - ${item.year || item.month || item.day}`,
+        subject: `Rapport ${type}`,
         message: "Voici le rapport PDF généré automatiquement.",
         pdfBase64,
-        filename: `rapport-${type}-${item.year || item.month || item.day}.pdf`,
+        filename,
       }),
     });
 
-    const result = await res.json();
-    if (res.ok) {
-      alert("Le rapport a été envoyé à la comptable.");
-    } else {
-      alert("Erreur : " + (result.message || "Échec de l'envoi."));
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || "Erreur lors de l’envoi du mail");
     }
+
+    alert("Email envoyé avec le PDF en pièce jointe !");
   } catch (err) {
-    alert("Erreur serveur : " + err.message);
+    alert("Erreur : " + err.message);
   }
-};
+}
+
 
   const DetailModal = ({ item, type, onClose }) => {
     const getPaymentsTotal = (payments) =>
