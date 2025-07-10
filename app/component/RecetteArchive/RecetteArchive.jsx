@@ -144,7 +144,7 @@ export default function RecettesArchiveModal({ onClose }) {
 
   // Ajout du contenu (titre, tableaux, etc.) → copie de ta fonction
   doc.setFontSize(16);
-  doc.text(`Détails ${type} ${titleDate}`, 14, 20);
+  doc.text(`Les Délices de Saleilles ${type} ${titleDate}`, 14, 20);
 
  function drawKeyValueTable(item, startX, startY) {
   const rowHeight = 8;
@@ -161,7 +161,7 @@ export default function RecettesArchiveModal({ onClose }) {
     doc.text(key, startX + 2, y + 6);
     doc.text(value, startX + col1Width + valueOffsetRight, y + 6, { align: "right" });
 
-    doc.line(startX, y, startX + col1Width + col2Width + valueOffsetRight - 20, y); // ajuster la ligne (moins offset)
+    doc.line(startX, y, startX + col1Width + col2Width + valueOffsetRight - 20, y);
     doc.line(startX, y + rowHeight, startX + col1Width + col2Width + valueOffsetRight - 20, y + rowHeight);
     doc.line(startX, y, startX, y + rowHeight);
     doc.line(startX + col1Width, y, startX + col1Width, y + rowHeight);

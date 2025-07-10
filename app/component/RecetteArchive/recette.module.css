@@ -142,10 +142,10 @@
 }
 
 .h3 {
-  margin: 30px auto 100px auto;
+  margin: 30px auto;
   width: 96%;
   font-weight: bold;
-  font-size: 2rem;
+  font-size: 1.5rem;
   padding: 8px 40px;
   text-align: center;
   border: 2px solid rgb(0, 0, 0);
@@ -153,13 +153,13 @@
 
 .h7 {
   font-weight: bold;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   text-decoration: underline;
   margin: 50px 20px 20px 20px;
 }
 
 .h4 {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   text-decoration: underline;
   margin: 20px;
   font-weight: bold;
@@ -171,24 +171,24 @@
 }
 
 .li {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   margin: 10px;
 }
 
 .totalRevenue {
   font-weight: bold;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: rgb(1, 100, 1)
 }
 
 .totalTvaReel {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: rgb(216, 6, 6)
 }
 
 .pDetails {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   margin: 10px 20px;
 }
 
@@ -201,7 +201,7 @@
 }
 
 .underline2 {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   text-decoration: underline;
 }
 

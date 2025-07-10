@@ -11,8 +11,6 @@ export async function POST(req) {
       return NextResponse.json({ success: false, message: "Champs manquants" });
     }
 
-  
-
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { comptabilityEmail },
