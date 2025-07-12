@@ -196,3 +196,14 @@
     justify-content: center;
     background-color: green;
 }
+
+.printBtn {
+    width: 150px;
+    padding: 16px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 20px;
+    background-color: rgb(189, 30, 9);
+}

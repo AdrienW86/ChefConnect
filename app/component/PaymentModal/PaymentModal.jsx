@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { jsPDF } from 'jspdf';
+
 import styles from './paymentModal.module.css';
 
 const PAYMENT_METHODS = ['Ticket', 'Espèces', 'CB', 'Chèque'];
@@ -13,6 +15,124 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
     PAYMENT_METHODS.reduce((acc, method) => ({ ...acc, [method]: 0 }), {})
   );
   const [payAll, setPayAll] = useState(true);
+
+ const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
+  const [message, setMessage] = useState('');
+
+
+
+// Génère le PDF de la facture et retourne un Blob
+const generateInvoicePDF = () => {
+  const doc = new jsPDF();
+  let y = 10;
+
+  doc.setFontSize(14);
+  doc.text('Les Délices de Saleilles', 10, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.text('26 avenue de Perpignan, 66280 Saleilles', 10, y);
+  y += 8;
+  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  y += 8;
+  doc.text(`Date : ${new Date().toLocaleString()}`, 10, y);
+  y += 10;
+  doc.text('------------------------------------------', 10, y);
+  y += 8;
+
+  paidItems.forEach(item => {
+    const line = `${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)} €`;
+    doc.text(line, 10, y);
+    y += 8;
+  });
+
+  doc.text('------------------------------------------', 10, y);
+  y += 8;
+
+  const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
+  y += 10;
+
+  doc.text('Modes de paiement :', 10, y);
+  y += 8;
+
+  Object.entries(paymentAmounts).forEach(([method, amount]) => {
+    if (amount > 0) {
+      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
+      y += 8;
+    }
+  });
+
+  y += 10;
+  doc.text('Merci de votre visite !', 10, y);
+
+  return doc.output('blob');
+};
+
+// Envoie le PDF par email via l'API backend
+const sendInvoiceByEmail = async () => {
+  if (!email) {
+    alert('Veuillez saisir une adresse email valide.');
+    return;
+  }
+
+  setSending(true);
+  setMessage('');
+
+  try {
+    const pdfBlob = generateInvoicePDF();
+
+    // Convertit le Blob en base64 pour l'envoyer dans le JSON
+    const base64PDF = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(pdfBlob);
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+
+    const response = await fetch('/api/bills-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        ticketNumber,
+        pdfBase64: base64PDF,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setMessage('Le ticket a été envoyé par email avec succès.');
+    } else {
+      setMessage('Erreur lors de l’envoi de l’email.');
+    }
+  } catch (error) {
+    setMessage('Erreur lors de la génération ou de l’envoi du PDF.');
+    console.error(error);
+  }
+
+  setSending(false);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const closePaymentModal = () => {
     setIsPaymentModalOpen(false);
@@ -235,6 +355,19 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
          <p> ===============================================</p>
         <p className={styles.ticketMessage}> Nous vous remercions de votre visite, à bientôt !</p>
       </div>
+       <div>
+      <input
+        type="email"
+        placeholder="Entrez votre email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        disabled={sending}
+      />
+      <button onClick={sendInvoiceByEmail} disabled={sending}>
+        {sending ? 'Envoi en cours...' : 'Envoyer la facture par email'}
+      </button>
+      {message && <p>{message}</p>}
+    </div>
      </section>
     );
   };

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@/app/Context/UserContext";
+import Link from "next/link";
 import ProductManager from "@/app/component/ProductManager/ProductManager";
 import styles from "./paramsCard.module.css";
 
@@ -232,9 +233,9 @@ const editProduct = async (productId, newProduct) => {
 
   return (
     <div className={styles.container}>
-      <button className={styles.closeButton} onClick={onClose}>
+      <Link className={styles.closeButton} href='/dashboard'>
         X
-      </button>
+      </Link>
       <h2 className={styles.h2}>Gestion des Catégories</h2>
 
       {loading ? (

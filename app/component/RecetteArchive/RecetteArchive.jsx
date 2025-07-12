@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import DetailModal from "../DetailsModal/DetailsModal";
+import Link from "next/link";
 import styles from "./recette.module.css";
 import { useUser } from "@/app/Context/UserContext";
 import jsPDF from "jspdf";
@@ -442,6 +442,12 @@ async function sendToComptable(item, type, user) {
           >
             Envoyer à la comptable
           </button>
+           <button
+            className={styles.closeButton}
+            onClick={() => onClose()}
+          >
+            Fermer
+          </button>
           </div>
       </div>
     );
@@ -452,9 +458,9 @@ async function sendToComptable(item, type, user) {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={onClose}>
+        <Link className={styles.closeButton} href="/dashboard">
           ✕
-        </button>
+        </Link>
         <h2 className={styles.title}>Recettes Archivées</h2>
 
         {loading && <p>Chargement...</p>}

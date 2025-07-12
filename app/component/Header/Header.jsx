@@ -8,6 +8,7 @@ import ComptabilityDocument from "../ComptabilityDocument/ComptabilityDocument";
 import RecetteArchive from "../RecetteArchive/RecetteArchive";
 import ComptaEmailForm from "../Comptability/Comptability";
 import Profil from '../Profil/Profil'
+import Link from "next/link";
 import Image from "next/image";
 import styles from "./header.module.css";
 
@@ -130,8 +131,8 @@ export default function Dashboard() {
             <div className={styles.profil}>
               <h3 className={styles.h3}> Profil </h3>
                <div className={styles.boxBtn}>
-                 <button className={styles.paramsButton} onClick={() => toggleLink(true)}> Editer la carte
-                  </button>
+                 <Link className={styles.paramsButton} href ='menu'> Editer la carte
+                  </Link>
                   <button className={styles.paramsButton} onClick={() => setIsProfil(true)}> 
                     Modifier profil
                   </button>
@@ -145,9 +146,9 @@ export default function Dashboard() {
                   Recettes courantes
                 </button>
                 {isRecetteOpen && <RecettesModal onClose={() => setIsRecetteOpen(false)} />}
-                <button className={styles.paramsButton} onClick={() => setIsArchiveRecetteOpen(true)}>
+                <Link className={styles.paramsButton} href ="/recettes">
                   Recettes archivées
-                </button>
+                </Link>
                 {isArchiveRecetteOpen && <RecetteArchive onClose={() => setIsArchiveRecetteOpen(false)} />}
                 </div>
             </div>   
@@ -167,8 +168,6 @@ export default function Dashboard() {
           </section>
         )}
       </div>
-      {isLinkOpen && <ParamsCard onClose={toggleLink} />}
-
     </header>      
   );
 }

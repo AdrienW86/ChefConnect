@@ -6,6 +6,7 @@ import { useRestaurant } from "@/app/Context/RestaurantContext";
 import { v4 as uuidv4 } from 'uuid';
 import PaymentModal from "../PaymentModal/PaymentModal";
 import CategoryModal from "../CategoryModal/CategoryModal";
+import PrintTicket from "../PrintTicket/PrintTicket";
 import styles from "./tableModal.module.css";
 
 export default function TableModal({ selectedTable, setIsModalOpen }) {
@@ -29,6 +30,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersFromApi, setOrdersFromApi] = useState([]);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
 
   useEffect(() => {
     if (!user || loading) return;
@@ -217,7 +219,6 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
               <div className={styles.totalTVA}>
                 Total TVA : <span className={styles.tva}> {totalTVA}€ </span>
               </div>
-
               <h3 className={styles.total}>
                 <strong>
                   Total TTC : <span className={styles.spanTotal}>{totalTTC.toFixed(2)}€</span>
@@ -239,6 +240,12 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
               ))}
               <div className={styles.paymentBtnContainer}>
                 <button
+                className={styles.printBtn}
+                onClick={() => setIsPrintOpen(true)}
+              >
+                IMPRIMER
+              </button>
+                <button
                 className={styles.paymentBtn}
                 onClick={() => setIsPaymentModalOpen(true)}
               >
@@ -249,6 +256,18 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
           </div>
         </div>
       </div>
+      {isPrintOpen && (
+        <PrintTicket
+          orders={currentOrders}
+          totalTTC={totalTTC}
+          totalHT={totalHT}
+          totalTVA={totalTVA}
+          tvaDetails={tvaDetails}
+          ticketNumber={ticketNumber}
+          selectedTable={selectedTable}
+          setIsPrintOpen={setIsPrintOpen}
+        />
+      )}
       {isPaymentModalOpen && (
         <PaymentModal
           ticketNumber={ticketNumber}
