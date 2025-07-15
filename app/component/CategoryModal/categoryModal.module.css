@@ -19,7 +19,8 @@
     font-size: 2em;
     right: 20px;
     transition: .4s ease-in-out;
-    color: red;
+    color: rgb(255, 255, 255);
+    background-color: red;
 }
 
 .closeBtn:hover {

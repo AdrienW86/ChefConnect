@@ -10,23 +10,22 @@
   z-index: 1000;
 }
 
+.closeButton {
+  position: absolute;
+  right: 40px;
+  padding: 10px;
+  font-size: 1rem;
+  color: white;
+  margin: 10px;
+  background-color: rgb(235, 34, 34)
+}
+
 .modalContent {
   padding: 2rem;
   width: 100%;
   height: 100%;
   position: relative;
   background-color: rgb(29, 85, 85);
-}
-
-.closeButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 1.5rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: white;
 }
 
 .title {
@@ -207,9 +206,10 @@
 
 .btnContainer {
   position: absolute;
-  bottom: 80px;
-  right : 30px;
+  top: 180px;
+  right : 60px;
   display: flex;
+  flex-wrap: wrap;
   flex-direction: column;
 }
 
@@ -229,7 +229,7 @@
   background-color: #2a8
 }
 
-.closeButton {
+.closeButtonModal {
   padding: 10px;
   font-size: 1rem;
   color: white;

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { jsPDF } from 'jspdf';
-
 import styles from './paymentModal.module.css';
 
 const PAYMENT_METHODS = ['Ticket', 'Espèces', 'CB', 'Chèque'];
@@ -16,11 +16,9 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
   );
   const [payAll, setPayAll] = useState(true);
 
- const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
-
-
 
 // Génère le PDF de la facture et retourne un Blob
 const generateInvoicePDF = () => {
@@ -69,6 +67,110 @@ const generateInvoicePDF = () => {
   return doc.output('blob');
 };
 
+const downloadInvoicePDF = () => {
+  const doc = new jsPDF();
+  let y = 10;
+
+  doc.setFontSize(14);
+  doc.text('Les Délices de Saleilles', 10, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.text('26 avenue de Perpignan, 66280 Saleilles', 10, y);
+  y += 8;
+  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  y += 8;
+  doc.text(`Date : ${new Date().toLocaleString()}`, 10, y);
+  y += 10;
+  doc.text('------------------------------------------', 10, y);
+  y += 8;
+
+  paidItems.forEach(item => {
+    const line = `${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)} €`;
+    doc.text(line, 10, y);
+    y += 8;
+  });
+
+  doc.text('------------------------------------------', 10, y);
+  y += 8;
+
+  const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
+  y += 10;
+
+  doc.text('Modes de paiement :', 10, y);
+  y += 8;
+
+  Object.entries(paymentAmounts).forEach(([method, amount]) => {
+    if (amount > 0) {
+      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
+      y += 8;
+    }
+  });
+
+  y += 10;
+  doc.text('Merci de votre visite !', 10, y);
+
+  // ✅ Le bon appel ici :
+  doc.save(`ticket-${ticketNumber}.pdf`);
+};
+
+const printInvoicePDF = () => {
+  const doc = new jsPDF();
+  let y = 10;
+
+  doc.setFontSize(14);
+  doc.text('Les Délices de Saleilles', 10, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.text('26 avenue de Perpignan, 66280 Saleilles', 10, y);
+  y += 8;
+  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  y += 8;
+  doc.text(`Date : ${new Date().toLocaleString()}`, 10, y);
+  y += 10;
+  doc.text('------------------------------------------', 10, y);
+  y += 8;
+
+  paidItems.forEach(item => {
+    const line = `${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)} €`;
+    doc.text(line, 10, y);
+    y += 8;
+  });
+
+  doc.text('------------------------------------------', 10, y);
+  y += 8;
+
+  const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
+  y += 10;
+
+  doc.text('Modes de paiement :', 10, y);
+  y += 8;
+
+  Object.entries(paymentAmounts).forEach(([method, amount]) => {
+    if (amount > 0) {
+      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
+      y += 8;
+    }
+  });
+
+  y += 10;
+  doc.text('Merci de votre visite !', 10, y);
+
+  // Génère le PDF dans une URL temporaire
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+
+  // Ouvre une nouvelle fenêtre pour impression
+  const printWindow = window.open(url);
+  if (printWindow) {
+    printWindow.addEventListener('load', () => {
+      printWindow.focus();
+      printWindow.print();
+    });
+  }
+};
+
 // Envoie le PDF par email via l'API backend
 const sendInvoiceByEmail = async () => {
   if (!email) {
@@ -114,25 +216,6 @@ const sendInvoiceByEmail = async () => {
 
   setSending(false);
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const closePaymentModal = () => {
     setIsPaymentModalOpen(false);
@@ -303,8 +386,8 @@ const sendInvoiceByEmail = async () => {
      <section className={styles.ticketContainer}>
        <div id="receipt" className={styles.ticket}>
         <div className={styles.ticketTitle}><strong>Les Délices de Saleilles</strong></div>
-        <div className={styles.ticketInfos}>26 avenue de Perpignan, 66280 Saleilles</div>
-         <div className={styles.ticketInfos}> 66280 Saleilles</div>
+        <div className={styles.ticketInfos}>26 avenue de Perpignan</div>
+        <div className={styles.ticketInfos}> 66280 Saleilles</div>
         <div className={styles.ticketPhone}>Tél: 06.50.72.95.88</div>
         <div style={{ textAlign: 'center' }}>{new Date().toLocaleString()}</div>
         <div className={styles.ticketNumber}>Ticket n° : <strong>{ticketNumber}</strong></div>
@@ -337,8 +420,7 @@ const sendInvoiceByEmail = async () => {
          <div className={styles.tvaItemTicket}>
           <p> <strong>Total TVA :</strong></p>
           <p><strong> {format(totalTVA)} </strong></p>
-         </div>
-        
+         </div>       
         <p> ===============================================</p>
         <div className={styles.tvaItemTicket}>
           <p><strong>Total TTC : </strong></p>
@@ -355,17 +437,26 @@ const sendInvoiceByEmail = async () => {
          <p> ===============================================</p>
         <p className={styles.ticketMessage}> Nous vous remercions de votre visite, à bientôt !</p>
       </div>
-       <div>
+       <div className={styles.btnTicketContainer}>
+        <button className={styles.btnDownload} onClick={downloadInvoicePDF}> Télécharger </button>
+        <button className={styles.btnPrint} onClick={printInvoicePDF}> Imprimer </button>
       <input
         type="email"
-        placeholder="Entrez votre email"
+        id="email"
+        name="email"
+        placeholder="Email de destination"
         value={email}
         onChange={e => setEmail(e.target.value)}
         disabled={sending}
+        className={styles.btnEmail}
       />
-      <button onClick={sendInvoiceByEmail} disabled={sending}>
+      <button onClick={sendInvoiceByEmail} disabled={sending} className={styles.btnEmail}>
         {sending ? 'Envoi en cours...' : 'Envoyer la facture par email'}
       </button>
+      <Link 
+        href="/dashboard"
+        className={styles.btnClose}
+      > Fermer</Link>
       {message && <p>{message}</p>}
     </div>
      </section>
@@ -377,7 +468,6 @@ const sendInvoiceByEmail = async () => {
       <div className={styles.paymentModalContent}>
         <button className={styles.closeBtn} onClick={closePaymentModal}>X</button>
         <h3 className={styles.paiementTitle}>Paiement de la Table {selectedTable}</h3>
-
         {!showReceipt ? (
           <>
             <div className={styles.paymentItems}>
@@ -394,7 +484,6 @@ const sendInvoiceByEmail = async () => {
                 </div>
               ))}
             </div>
-
             <div className={styles.pay}>
               <label className={styles.label}>
                 <input
@@ -413,7 +502,6 @@ const sendInvoiceByEmail = async () => {
                 /> Payer la sélection <span className={styles.span}> {calculateSelectedTotal().toFixed(2)} €</span>
               </label>
             </div>
-
             <div className={styles.paymentMethods}>
               {PAYMENT_METHODS.map(method => (
                 <div key={method} className={styles.paymentMethod}>
@@ -428,7 +516,6 @@ const sendInvoiceByEmail = async () => {
                 </div>
               ))}
             </div>
-
             <button
               className={styles.btnValiderPaiement}
               onClick={() => processPayment(payAll)}
@@ -444,15 +531,6 @@ const sendInvoiceByEmail = async () => {
         ) : (
           <>
             <Receipt items={paidItems} />
-            <button className={styles.printBtn} onClick={printReceipt}>Imprimer</button>
-            <button
-              className={styles.closeBtnReceipt}
-              onClick={() => {
-                closePaymentModal();
-              }}
-            >
-              Fermer
-            </button>
           </>
         )}
       </div>

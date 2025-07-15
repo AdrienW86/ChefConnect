@@ -6,7 +6,7 @@ import Link from "next/link";
 import ProductManager from "@/app/component/ProductManager/ProductManager";
 import styles from "./paramsCard.module.css";
 
-export default function ParamsCard({ onClose }) {
+export default function ParamsCard() {
   const { user, loading } = useUser();
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
@@ -234,7 +234,7 @@ const editProduct = async (productId, newProduct) => {
   return (
     <div className={styles.container}>
       <Link className={styles.closeButton} href='/dashboard'>
-        X
+        x
       </Link>
       <h2 className={styles.h2}>Gestion des Catégories</h2>
 

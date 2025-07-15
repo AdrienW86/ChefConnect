@@ -427,9 +427,8 @@ async function sendToComptable(item, type, user) {
                 })}
               </ul>
             </div>
-          )}       
-        </div>
-          <div className={styles.btnContainer}>
+          )}   
+              <div className={styles.btnContainer}>
             <button
             className={styles.pdfButton}
             onClick={() => exportToPdf(item, type)}
@@ -443,12 +442,14 @@ async function sendToComptable(item, type, user) {
             Envoyer à la comptable
           </button>
            <button
-            className={styles.closeButton}
+            className={styles.closeButtonModal}
             onClick={() => onClose()}
           >
             Fermer
           </button>
           </div>
+        </div>
+          
       </div>
     );
   };
