@@ -385,7 +385,7 @@ const sendInvoiceByEmail = async () => {
     return (
      <section className={styles.ticketContainer}>
        <div id="receipt" className={styles.ticket}>
-        <div className={styles.ticketTitle}><strong>Les Délices de Saleilles</strong></div>
+        <div className={styles.ticketTitle}><strong>PICARFRITES</strong></div>
         <div className={styles.ticketInfos}>26 avenue de Perpignan</div>
         <div className={styles.ticketInfos}> 66280 Saleilles</div>
         <div className={styles.ticketPhone}>Tél: 06.50.72.95.88</div>
