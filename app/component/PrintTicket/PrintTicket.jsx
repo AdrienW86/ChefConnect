@@ -88,16 +88,20 @@ export default function PrintTicketPDF({
         const worker = html2pdf().set(opt).from(element);
         const pdfBlob = await worker.outputPdf("blob");
 
-        // Ouvre le PDF automatiquement
+        // Ouvre dans un nouvel onglet
         const pdfUrl = URL.createObjectURL(pdfBlob);
         window.open(pdfUrl, "_blank");
 
-        // Propose le partage si disponible
-        if (navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], `ticket_${ticketNumber}.pdf`, { type: "application/pdf" })] })) {
-          const file = new File([pdfBlob], `ticket_${ticketNumber}.pdf`, {
-            type: "application/pdf",
-          });
+        // Propose le partage natif si dispo
+        const file = new File([pdfBlob], `ticket_${ticketNumber}.pdf`, {
+          type: "application/pdf",
+        });
 
+        if (
+          navigator.canShare &&
+          navigator.canShare({ files: [file] }) &&
+          navigator.share
+        ) {
           await navigator.share({
             title: `Ticket ${ticketNumber}`,
             text: `Voici votre ticket de caisse.`,
@@ -105,6 +109,8 @@ export default function PrintTicketPDF({
           });
         }
 
+        // Libère l'URL pour éviter les fuites mémoire
+        URL.revokeObjectURL(pdfUrl);
       } catch (error) {
         console.error("Erreur lors de la génération ou du partage du PDF :", error);
       } finally {

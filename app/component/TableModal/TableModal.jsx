@@ -20,10 +20,6 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   } = useRestaurant();
 
   const [ticketNumber, setTicketNumber] = useState('');
-    useEffect(() => {
-      setTicketNumber(uuidv4());
-    }, []);
-
   const [categories, setCategories] = useState([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [currentCategory, setCurrentCategory] = useState(null);
@@ -31,6 +27,10 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersFromApi, setOrdersFromApi] = useState([]);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
+
+  useEffect(() => {
+    setTicketNumber(uuidv4());
+  }, []);
 
   useEffect(() => {
     if (!user || loading) return;
@@ -149,6 +149,25 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     };
   };
 
+  const handleShare = async () => {
+    const items = mergedOrders("en cours");
+    const text = items.map(item => `• ${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€`).join("\n");
+    const summary = `Table ${selectedTable} - Total TTC: ${totalTTC.toFixed(2)}€\n\n${text}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Ticket Table ${selectedTable}`,
+          text: summary,
+        });
+      } catch (error) {
+        console.error("Erreur de partage:", error);
+      }
+    } else {
+      alert("Le partage n'est pas pris en charge sur ce navigateur.");
+    }
+  };
+
   if (loading || loadingOrders) return <p>Chargement des données...</p>;
   if (!user) return <p>Utilisateur non connecté</p>;
   if (!selectedTable) return <p>Aucune table sélectionnée</p>;
@@ -160,138 +179,52 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     <>
       <div className={styles.tableModal}>
         <div className={styles.tableModalContent}>
-          <button className={styles.closeBtn} onClick={() => setIsModalOpen(false)}>
-            X
-          </button>
+          <button className={styles.closeBtn} onClick={() => setIsModalOpen(false)}>X</button>
           <h3 className={styles.tableNumber}>Table {selectedTable}</h3>
-          {currentOrders.length === 0 && (
-            <p className={styles.not}>Aucune commande pour cette table.</p>
-          )}
+          {currentOrders.length === 0 && <p className={styles.not}>Aucune commande pour cette table.</p>}
           <div className={styles.commandeBox}>
             <div className={styles.commande}>
               {mergedOrders("en cours").map((item, index) => (
                 <div key={`en-cours-${item.name}-${index}`} className={styles.itemCommande}>
-                  <button
-                    className={styles.btnDelete}
-                    onClick={() => removeItemFromOrder(item, selectedTable, user.userId)}
-                  >
-                    x
-                  </button>
-                  <span className={styles.itemName}>
-                    {item.name} (x{item.quantity})
-                  </span>
-                  <span className={styles.itemPrice}>
-                    {(item.price * item.quantity).toFixed(2)}€
-                  </span>
+                  <button className={styles.btnDelete} onClick={() => removeItemFromOrder(item, selectedTable, user.userId)}>x</button>
+                  <span className={styles.itemName}>{item.name} (x{item.quantity})</span>
+                  <span className={styles.itemPrice}>{(item.price * item.quantity).toFixed(2)}€</span>
                 </div>
               ))}
-              {mergedOrders("payée").map((item, index) => (
-                <div key={`servi-${item.name}-${index}`} className={styles.itemCommande}>
-                  <span className={styles.itemName}>
-                    {item.name} (x{item.quantity})
-                  </span>
-                  <span className={styles.itemStatus} style={{ color: "green" }}>
-                    Servi
-                  </span>
-                  <button
-                    className={styles.btnDelete}
-                    onClick={() => removeItemFromOrder(item, selectedTable)}
-                  >
-                    x
-                  </button>
-                  <span className={styles.itemPrice}>
-                    {Number(item.price).toFixed(2)}€ (TVA {item.tva}% incluse)
-                  </span>
-                </div>
-              ))}
-              <h3 className={styles.totalHT}>
-                Total HT : <span className={styles.spanTotal}>{totalHT}€</span>
-              </h3>
+              <h3 className={styles.totalHT}>Total HT : <span className={styles.spanTotal}>{totalHT}€</span></h3>
               <h3 className={styles.totalTVA}>
                 <div className={styles.tvaBreakdown}>
                   {Object.entries(tvaDetails).map(([rate, amount]) => (
-                    <div key={rate} className={styles.rate}>
-                      TVA {rate}% : <span className={styles.tva}>{amount}€</span>
-                    </div>
+                    <div key={rate} className={styles.rate}>TVA {rate}% : <span className={styles.tva}>{amount}€</span></div>
                   ))}
                 </div>
               </h3>
-              <div className={styles.totalTVA}>
-                Total TVA : <span className={styles.tva}> {totalTVA}€ </span>
-              </div>
-              <h3 className={styles.total}>
-                <strong>
-                  Total TTC : <span className={styles.spanTotal}>{totalTTC.toFixed(2)}€</span>
-                </strong>
-              </h3>
+              <div className={styles.totalTVA}>Total TVA : <span className={styles.tva}>{totalTVA}€</span></div>
+              <h3 className={styles.total}><strong>Total TTC : <span className={styles.spanTotal}>{totalTTC.toFixed(2)}€</span></strong></h3>
             </div>
             <div className={styles.boxBtn}>
               {categories.map((category) => (
-                <button
-                  key={category._id}
-                  className={styles.btnTableModal}
-                  onClick={() => {
-                    setCurrentCategory(category);
-                    setIsCategoryModalOpen(true);
-                  }}
-                >
+                <button key={category._id} className={styles.btnTableModal} onClick={() => { setCurrentCategory(category); setIsCategoryModalOpen(true); }}>
                   {category.name.toUpperCase()}
                 </button>
               ))}
               <div className={styles.paymentBtnContainer}>
-                <button
-                className={styles.printBtn}
-                onClick={() => setIsPrintOpen(true)}
-              >
-                IMPRIMER
-              </button>
-                <button
-                className={styles.paymentBtn}
-                onClick={() => setIsPaymentModalOpen(true)}
-              >
-                PAYER
-              </button>
+                <button className={styles.printBtn} onClick={() => setIsPrintOpen(true)}>IMPRIMER</button>
+                <button className={styles.paymentBtn} onClick={() => setIsPaymentModalOpen(true)}>PAYER</button>
+                <button className={styles.shareBtn} onClick={handleShare}>PARTAGER</button>
               </div>
             </div>
           </div>
         </div>
       </div>
       {isPrintOpen && (
-        <PrintTicket
-          orders={currentOrders}
-          totalTTC={totalTTC}
-          totalHT={totalHT}
-          totalTVA={totalTVA}
-          tvaDetails={tvaDetails}
-          ticketNumber={ticketNumber}
-          selectedTable={selectedTable}
-          setIsPrintOpen={setIsPrintOpen}
-        />
+        <PrintTicket orders={currentOrders} totalTTC={totalTTC} totalHT={totalHT} totalTVA={totalTVA} tvaDetails={tvaDetails} ticketNumber={ticketNumber} selectedTable={selectedTable} setIsPrintOpen={setIsPrintOpen} />
       )}
       {isPaymentModalOpen && (
-        <PaymentModal
-          ticketNumber={ticketNumber}
-          user={user}
-          selectedTable={selectedTable}
-          orders={currentOrders}
-          setOrders={setOrders}
-          totalTTC={totalTTC}
-          totalHT={totalHT}
-          totalTVA={totalTVA}
-          tvaDetails={tvaDetails}
-          removeItemsFromOrder={removeItemsFromOrder}
-          setIsPaymentModalOpen={setIsPaymentModalOpen}
-        />
+        <PaymentModal ticketNumber={ticketNumber} user={user} selectedTable={selectedTable} orders={currentOrders} setOrders={setOrders} totalTTC={totalTTC} totalHT={totalHT} totalTVA={totalTVA} tvaDetails={tvaDetails} removeItemsFromOrder={removeItemsFromOrder} setIsPaymentModalOpen={setIsPaymentModalOpen} />
       )}
       {isCategoryModalOpen && currentCategory && (
-        <CategoryModal
-          currentCategory={currentCategory}
-          setIsCategoryModalOpen={setIsCategoryModalOpen}
-          addItemToOrder={(item) => {
-            addItemToOrder(item, selectedTable, user.userId);
-            setIsCategoryModalOpen(false);
-          }}
-        />
+        <CategoryModal currentCategory={currentCategory} setIsCategoryModalOpen={setIsCategoryModalOpen} addItemToOrder={(item) => { addItemToOrder(item, selectedTable, user.userId); setIsCategoryModalOpen(false); }} />
       )}
     </>
   );

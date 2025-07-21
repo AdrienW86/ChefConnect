@@ -79,7 +79,6 @@ const generateBills = async () => {
   // 🖥️ Sinon on ouvre dans le navigateur
   const url = URL.createObjectURL(blob);
   window.open(url);
-
 };
 
   const generateNote = async () => {
@@ -365,24 +364,11 @@ const generateBills = async () => {
        <div className={styles.btnTicketContainer}>
         <button className={styles.btnDownload2} onClick={() => generateNote()}> Note </button>
         <button className={styles.btnDownload} onClick={() => generateBills()}> Facture </button>
-
-      {/* <input
-        type="email"
-        id="email"
-        name="email"
-        placeholder="Email de destination"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        disabled={sending}
-        className={styles.btnEmail}
-      />
-      <button onClick={sendInvoiceByEmail} disabled={sending} className={styles.btnEmail}>
-        {sending ? 'Envoi en cours...' : 'Envoyer la facture par email'}
-      </button> */}
       <Link 
         href="/dashboard"
         className={styles.btnClose}
-      > Fermer</Link>
+      > Fermer
+      </Link>
       {message && <p>{message}</p>}
     </div>
      </section>
