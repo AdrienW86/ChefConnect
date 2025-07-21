@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import styles from './paymentModal.module.css';
 
 const PAYMENT_METHODS = ['Ticket', 'Espèces', 'CB', 'Chèque'];
@@ -20,84 +21,98 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
 
-// Génère le PDF de la facture et retourne un Blob
-const generateInvoicePDF = () => {
+const generateBills = () => {
   const doc = new jsPDF();
   let y = 10;
 
   doc.setFontSize(14);
-  doc.text('Les Délices de Saleilles', 10, y);
-  y += 8;
-  doc.setFontSize(10);
-  doc.text('26 avenue de Perpignan, 66280 Saleilles', 10, y);
-  y += 8;
-  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
-  y += 8;
-  doc.text(`Date : ${new Date().toLocaleString()}`, 10, y);
+  doc.text("PICARFRITES", 10, y);
   y += 10;
-  doc.text('------------------------------------------', 10, y);
-  y += 8;
 
+  doc.setFontSize(10);
+  doc.text("26 avenue de Perpignan, 66280 Saleilles", 10, y);
+  y += 10;
+
+  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  y += 10;
+
+  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
+  y += 10;
+
+  doc.text("------------------------------------------", 10, y);
+  y += 10;
+
+  // Affichage des items payés
   paidItems.forEach(item => {
-    const line = `${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)} €`;
-    doc.text(line, 10, y);
-    y += 8;
+    const total = (item.price * item.quantity).toFixed(2);
+    doc.text(`${item.name} x${item.quantity} - ${total} €`, 10, y);
+    y += 10;
   });
 
-  doc.text('------------------------------------------', 10, y);
-  y += 8;
+  doc.text("------------------------------------------", 10, y);
+  y += 10;
 
   const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
   y += 10;
 
-  doc.text('Modes de paiement :', 10, y);
-  y += 8;
-
-  Object.entries(paymentAmounts).forEach(([method, amount]) => {
-    if (amount > 0) {
-      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
-      y += 8;
-    }
-  });
-
+  doc.text("Merci de votre visite !", 10, y);
   y += 10;
-  doc.text('Merci de votre visite !', 10, y);
 
-  return doc.output('blob');
+ const blob = doc.output("blob");
+const url = URL.createObjectURL(blob);
+window.open(url);
+
 };
 
-const downloadInvoicePDF = () => {
+
+
+
+
+
+
+  const generateNote = () => {
   const doc = new jsPDF();
   let y = 10;
 
   doc.setFontSize(14);
-  doc.text('Les Délices de Saleilles', 10, y);
-  y += 8;
-  doc.setFontSize(10);
-  doc.text('26 avenue de Perpignan, 66280 Saleilles', 10, y);
-  y += 8;
-  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
-  y += 8;
-  doc.text(`Date : ${new Date().toLocaleString()}`, 10, y);
-  y += 10;
-  doc.text('------------------------------------------', 10, y);
+  doc.text("PICARFRITES", 10, y);
   y += 8;
 
-  paidItems.forEach(item => {
-    const line = `${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)} €`;
+  doc.setFontSize(10);
+  doc.text("26 avenue de Perpignan, 66280 Saleilles", 10, y);
+  y += 8;
+
+  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  y += 8;
+
+  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
+  y += 10;
+
+  doc.text("------------------------------------------", 10, y);
+  y += 8;
+
+ 
+
+  paidItems.forEach((item) => {
+    const total = (item.price * item.quantity).toFixed(2);
+    const line = `${"produit"} x${item.quantity} - ${total} €`;
     doc.text(line, 10, y);
     y += 8;
   });
 
-  doc.text('------------------------------------------', 10, y);
+  doc.text("------------------------------------------", 10, y);
   y += 8;
+  
 
-  const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = paidItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
   y += 10;
 
-  doc.text('Modes de paiement :', 10, y);
+  doc.text("Modes de paiement :", 10, y);
   y += 8;
 
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
@@ -108,113 +123,75 @@ const downloadInvoicePDF = () => {
   });
 
   y += 10;
-  doc.text('Merci de votre visite !', 10, y);
+  doc.text("Merci de votre visite !", 10, y);
 
-  // ✅ Le bon appel ici :
-  doc.save(`ticket-${ticketNumber}.pdf`);
-};
-
-const printInvoicePDF = () => {
-  const doc = new jsPDF();
-  let y = 10;
-
-  doc.setFontSize(14);
-  doc.text('Les Délices de Saleilles', 10, y);
-  y += 8;
-  doc.setFontSize(10);
-  doc.text('26 avenue de Perpignan, 66280 Saleilles', 10, y);
-  y += 8;
-  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
-  y += 8;
-  doc.text(`Date : ${new Date().toLocaleString()}`, 10, y);
-  y += 10;
-  doc.text('------------------------------------------', 10, y);
-  y += 8;
-
-  paidItems.forEach(item => {
-    const line = `${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)} €`;
-    doc.text(line, 10, y);
-    y += 8;
-  });
-
-  doc.text('------------------------------------------', 10, y);
-  y += 8;
-
-  const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
-  y += 10;
-
-  doc.text('Modes de paiement :', 10, y);
-  y += 8;
-
-  Object.entries(paymentAmounts).forEach(([method, amount]) => {
-    if (amount > 0) {
-      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
-      y += 8;
-    }
-  });
-
-  y += 10;
-  doc.text('Merci de votre visite !', 10, y);
-
-  // Génère le PDF dans une URL temporaire
-  const blob = doc.output('blob');
+  const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
-
-  // Ouvre une nouvelle fenêtre pour impression
-  const printWindow = window.open(url);
-  if (printWindow) {
-    printWindow.addEventListener('load', () => {
-      printWindow.focus();
-      printWindow.print();
-    });
-  }
-};
-
-// Envoie le PDF par email via l'API backend
-const sendInvoiceByEmail = async () => {
-  if (!email) {
-    alert('Veuillez saisir une adresse email valide.');
-    return;
+  window.open(url);
   }
 
-  setSending(true);
-  setMessage('');
+const downloadInvoicePDF2 = () => {
+ const doc = new jsPDF();
+  let y = 10;
 
-  try {
-    const pdfBlob = generateInvoicePDF();
+  doc.setFontSize(14);
+  doc.text("PICARFRITES", 10, y);
+  y += 8;
 
-    // Convertit le Blob en base64 pour l'envoyer dans le JSON
-    const base64PDF = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(pdfBlob);
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
+  doc.setFontSize(10);
+  doc.text("26 avenue de Perpignan, 66280 Saleilles", 10, y);
+  y += 8;
 
-    const response = await fetch('/api/bills-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        ticketNumber,
-        pdfBase64: base64PDF,
-      }),
-    });
+  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  y += 8;
 
-    const data = await response.json();
+  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
+  y += 10;
 
-    if (data.success) {
-      setMessage('Le ticket a été envoyé par email avec succès.');
-    } else {
-      setMessage('Erreur lors de l’envoi de l’email.');
+  doc.text("------------------------------------------", 10, y);
+  y += 8;
+
+  // ✅ Total HT
+  doc.text(`Total HT : ${totalHT.toFixed(2)} €`, 10, y);
+  y += 8;
+
+  doc.text("------------------------------------------", 10, y);
+  y += 8;
+
+  // ✅ TVA par taux (ex: TVA 10% : 3.00 €)
+  Object.entries(tvaMap).forEach(([rate, val]) => {
+    doc.text(`TVA ${rate}% : ${val.tva.toFixed(2)} €`, 10, y);
+    y += 8;
+  });
+
+  doc.text("------------------------------------------", 10, y);
+  y += 8;
+
+  // ✅ Total TVA
+  doc.text(`Total TVA : ${totalTVA.toFixed(2)} €`, 10, y);
+  y += 8;
+
+  // ✅ Total TTC
+  const totalTTC = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  doc.text(`Total TTC : ${totalTTC.toFixed(2)} €`, 10, y);
+  y += 10;
+
+  doc.text("Modes de paiement :", 10, y);
+  y += 8;
+
+  Object.entries(paymentAmounts).forEach(([method, amount]) => {
+    if (amount > 0) {
+      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
+      y += 8;
     }
-  } catch (error) {
-    setMessage('Erreur lors de la génération ou de l’envoi du PDF.');
-    console.error(error);
-  }
+  });
 
-  setSending(false);
+  y += 10;
+  doc.text("Merci de votre visite !", 10, y);
+
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  window.open(url);
 };
 
   const closePaymentModal = () => {
@@ -438,9 +415,10 @@ const sendInvoiceByEmail = async () => {
         <p className={styles.ticketMessage}> Nous vous remercions de votre visite, à bientôt !</p>
       </div>
        <div className={styles.btnTicketContainer}>
-        <button className={styles.btnDownload} onClick={downloadInvoicePDF}> Télécharger </button>
-        <button className={styles.btnPrint} onClick={printInvoicePDF}> Imprimer </button>
-      <input
+        <button className={styles.btnDownload2} onClick={() => generateNote()}> Note </button>
+        <button className={styles.btnDownload} onClick={() => generateBills()}> Facture </button>
+
+      {/* <input
         type="email"
         id="email"
         name="email"
@@ -452,7 +430,7 @@ const sendInvoiceByEmail = async () => {
       />
       <button onClick={sendInvoiceByEmail} disabled={sending} className={styles.btnEmail}>
         {sending ? 'Envoi en cours...' : 'Envoyer la facture par email'}
-      </button>
+      </button> */}
       <Link 
         href="/dashboard"
         className={styles.btnClose}

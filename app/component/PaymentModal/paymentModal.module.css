@@ -225,6 +225,13 @@
     background-color: red ;
 }
 
+.btnDownload2 {
+    color: white;
+    padding: 4px;
+    margin-bottom: 10px;
+    background-color: rgb(70, 9, 240) ;
+}
+
 .btnPrint {
     color: white;
     padding: 4px;
