@@ -21,7 +21,7 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
 
-const generateBills = () => {
+const generateBills = async () => {
   const doc = new jsPDF();
   let y = 10;
 
@@ -59,10 +59,26 @@ const generateBills = () => {
   doc.text("Merci de votre visite !", 10, y);
   y += 10;
 
- const blob = doc.output("blob", { type: "application/pdf" });
+  const blob = doc.output("blob");
+  const file = new File([blob], `ticket-${ticketNumber}.pdf`, { type: "application/pdf" });
 
-const url = URL.createObjectURL(blob);
-window.open(url);
+  // 📱 Partage sur mobile si possible
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "Ticket de caisse",
+        text: "Voici votre ticket",
+      });
+      return;
+    } catch (err) {
+      console.error("Erreur de partage :", err);
+    }
+  }
+
+  // 🖥️ Sinon on ouvre dans le navigateur
+  const url = URL.createObjectURL(blob);
+  window.open(url);
 
 };
 

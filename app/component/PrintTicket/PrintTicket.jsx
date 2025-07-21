@@ -32,12 +32,12 @@ export default function PrintTicketPDF({
         });
 
         const itemLines = orders
-          .flatMap(order => order.items)
-          .map(item => {
+          .flatMap((order) => order.items)
+          .map((item) => {
             const total = (Number(item.price) * Number(item.quantity)).toFixed(2);
             return `<div style="display:flex; justify-content:space-between;">
                       <span>${item.name} x${item.quantity}</span>
-                      <span>${total}€</span>
+                      <span>${total} €</span>
                     </div>`;
           })
           .join("");
@@ -46,29 +46,32 @@ export default function PrintTicketPDF({
           .map(
             ([rate, amount]) =>
               `<div style="display:flex; justify-content:space-between;">
-                <span>TVA ${rate}%</span><span>${amount}€</span>
+                <span>TVA ${rate}%</span>
+                <span>${Number(amount).toFixed(2)} €</span>
               </div>`
           )
           .join("");
 
         element.innerHTML = `
           <div style="text-align:center; font-weight:bold;">SARL PICARFRITES</div>
-          <div style="margin: 8px 0; text-align:center;">Table : ${selectedTable}</div>
-          <div style="margin: 8px 0; text-align:center;">Ticket N° ${ticketNumber}</div>
-          <div style="margin: 8px 0; text-align:center;">${formattedDate}</div>
+          <div style="text-align:center;">26 avenue de Perpignan, 66280 Saleilles</div>
+          <div style="text-align:center;">Tél: 06.50.72.95.88</div>
+          <div style="margin: 10px 0; text-align:center;">Table : ${selectedTable}</div>
+          <div style="text-align:center;">Ticket N° ${ticketNumber}</div>
+          <div style="text-align:center;">${formattedDate}</div>
           <hr style="border-top:1px dashed #000;" />
           ${itemLines}
           <hr style="border-top:1px dashed #000;" />
           ${tvaLines}
           <hr style="border-top:1px dashed #000;" />
           <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>Total HT</span><span>${totalHT}€</span>
+            <span>Total HT</span><span>${Number(totalHT).toFixed(2)} €</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>Total TVA</span><span>${totalTVA}€</span>
+            <span>Total TVA</span><span>${Number(totalTVA).toFixed(2)} €</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>Total TTC</span><span>${Number(totalTTC).toFixed(2)}€</span>
+            <span>Total TTC</span><span>${Number(totalTTC).toFixed(2)} €</span>
           </div>
           <hr style="border-top:1px dashed #000;" />
           <div style="text-align:center;">Merci pour votre visite !</div>
@@ -83,13 +86,27 @@ export default function PrintTicketPDF({
         };
 
         const worker = html2pdf().set(opt).from(element);
-
         const pdfBlob = await worker.outputPdf("blob");
+
+        // Ouvre le PDF automatiquement
         const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl);
+        window.open(pdfUrl, "_blank");
+
+        // Propose le partage si disponible
+        if (navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], `ticket_${ticketNumber}.pdf`, { type: "application/pdf" })] })) {
+          const file = new File([pdfBlob], `ticket_${ticketNumber}.pdf`, {
+            type: "application/pdf",
+          });
+
+          await navigator.share({
+            title: `Ticket ${ticketNumber}`,
+            text: `Voici votre ticket de caisse.`,
+            files: [file],
+          });
+        }
 
       } catch (error) {
-        console.error("Erreur lors de la génération du PDF :", error);
+        console.error("Erreur lors de la génération ou du partage du PDF :", error);
       } finally {
         setIsPrintOpen(false);
       }
