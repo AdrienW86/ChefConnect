@@ -43,10 +43,14 @@
 }
 
 .item {
+    height: 40px;
     width: 150px;
     font-size: 0.8em;
     padding: 4px;
     margin: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     font-weight: bold;
     border-radius: 8px;
     text-align: center;

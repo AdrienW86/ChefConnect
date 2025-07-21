@@ -21,8 +21,7 @@ export default function CategoryModal({ currentCategory, setIsCategoryModalOpen,
         <div className={styles.categoryItems}>
           {products.map((item, index) => (
             <div key={index} className={styles.item} onClick={() => handleAddItem(item)}>
-              <span>{item.name}</span>
-              <span className={styles.price}>{item.price}€</span>
+              <p>{item.name} <span className={styles.price}>{item.price}€</span> </p>             
             </div>
           ))}
         </div>
