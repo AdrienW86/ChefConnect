@@ -364,11 +364,11 @@ const generateBills = async () => {
        <div className={styles.btnTicketContainer}>
         <button className={styles.btnDownload2} onClick={() => generateNote()}> Note </button>
         <button className={styles.btnDownload} onClick={() => generateBills()}> Facture </button>
-      <Link 
-        href="/dashboard"
+      <button 
+        onClick={() => window.location.reload()}       
         className={styles.btnClose}
       > Fermer
-      </Link>
+      </button>
       {message && <p>{message}</p>}
     </div>
      </section>
