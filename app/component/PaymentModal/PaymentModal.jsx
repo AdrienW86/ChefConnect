@@ -59,19 +59,14 @@ const generateBills = () => {
   doc.text("Merci de votre visite !", 10, y);
   y += 10;
 
- const blob = doc.output("blob");
+ const blob = doc.output("blob", { type: "application/pdf" });
+
 const url = URL.createObjectURL(blob);
 window.open(url);
 
 };
 
-
-
-
-
-
-
-  const generateNote = () => {
+  const generateNote = async () => {
   const doc = new jsPDF();
   let y = 10;
 
@@ -92,18 +87,15 @@ window.open(url);
   doc.text("------------------------------------------", 10, y);
   y += 8;
 
- 
-
   paidItems.forEach((item) => {
     const total = (item.price * item.quantity).toFixed(2);
-    const line = `${"produit"} x${item.quantity} - ${total} €`;
+    const line = `produit x${item.quantity} - ${total} €`;
     doc.text(line, 10, y);
     y += 8;
   });
 
   doc.text("------------------------------------------", 10, y);
   y += 8;
-  
 
   const total = paidItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -126,73 +118,27 @@ window.open(url);
   doc.text("Merci de votre visite !", 10, y);
 
   const blob = doc.output("blob");
-  const url = URL.createObjectURL(blob);
-  window.open(url);
+  const file = new File([blob], `ticket-${ticketNumber}.pdf`, { type: "application/pdf" });
+
+  // 📱 Partage sur mobile si possible
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "Ticket de caisse",
+        text: "Voici votre ticket",
+      });
+      return;
+    } catch (err) {
+      console.error("Erreur de partage :", err);
+    }
   }
 
-const downloadInvoicePDF2 = () => {
- const doc = new jsPDF();
-  let y = 10;
-
-  doc.setFontSize(14);
-  doc.text("PICARFRITES", 10, y);
-  y += 8;
-
-  doc.setFontSize(10);
-  doc.text("26 avenue de Perpignan, 66280 Saleilles", 10, y);
-  y += 8;
-
-  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
-  y += 8;
-
-  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
-  y += 10;
-
-  doc.text("------------------------------------------", 10, y);
-  y += 8;
-
-  // ✅ Total HT
-  doc.text(`Total HT : ${totalHT.toFixed(2)} €`, 10, y);
-  y += 8;
-
-  doc.text("------------------------------------------", 10, y);
-  y += 8;
-
-  // ✅ TVA par taux (ex: TVA 10% : 3.00 €)
-  Object.entries(tvaMap).forEach(([rate, val]) => {
-    doc.text(`TVA ${rate}% : ${val.tva.toFixed(2)} €`, 10, y);
-    y += 8;
-  });
-
-  doc.text("------------------------------------------", 10, y);
-  y += 8;
-
-  // ✅ Total TVA
-  doc.text(`Total TVA : ${totalTVA.toFixed(2)} €`, 10, y);
-  y += 8;
-
-  // ✅ Total TTC
-  const totalTTC = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  doc.text(`Total TTC : ${totalTTC.toFixed(2)} €`, 10, y);
-  y += 10;
-
-  doc.text("Modes de paiement :", 10, y);
-  y += 8;
-
-  Object.entries(paymentAmounts).forEach(([method, amount]) => {
-    if (amount > 0) {
-      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
-      y += 8;
-    }
-  });
-
-  y += 10;
-  doc.text("Merci de votre visite !", 10, y);
-
-  const blob = doc.output("blob");
+  // 🖥️ Sinon on ouvre dans le navigateur
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
   const closePaymentModal = () => {
     setIsPaymentModalOpen(false);
@@ -325,20 +271,6 @@ const downloadInvoicePDF2 = () => {
     } catch (error) {
       console.error("❌ Erreur lors de l'appel API :", error);
     }
-  };
-
-  const printReceipt = () => {
-    const printContent = document.getElementById('receipt').innerHTML;
-    const win = window.open('', '', 'width=300,height=600');
-    win.document.write(`
-      <html>
-        <head><title>Ticket</title></head>
-        <body onload="window.print(); window.close();">
-          ${printContent}
-        </body>
-      </html>
-    `);
-    win.document.close();
   };
 
   const Receipt = ({ items }) => {
