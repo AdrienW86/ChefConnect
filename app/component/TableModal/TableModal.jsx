@@ -209,7 +209,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
                 </button>
               ))}
               <div className={styles.paymentBtnContainer}>
-                <button className={styles.printBtn} onClick={handleShare}>IMPRIMER</button>
+                <button className={styles.printBtn} onClick={setIsPrintOpen}>IMPRIMER</button>
                 <button className={styles.paymentBtn} onClick={() => setIsPaymentModalOpen(true)}>PAYER</button>
                 {/* <button className={styles.shareBtn} onClick={handleShare}>PARTAGER</button> */}
               </div>
