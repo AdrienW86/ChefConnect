@@ -95,6 +95,16 @@ const generateBills = async () => {
   doc.text(`Total TTC : ${totalTTC.toFixed(2)} €`, 10, y);
   y += 10;
 
+  doc.text("Modes de paiement :", 10, y);
+  y += 8;
+
+  Object.entries(paymentAmounts).forEach(([method, amount]) => {
+    if (amount > 0) {
+      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
+      y += 8;
+    }
+  });
+
   doc.text("Merci de votre visite !", 10, y);
   y += 10;
 
