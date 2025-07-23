@@ -8,7 +8,8 @@ import styles from './paymentModal.module.css';
 
 const PAYMENT_METHODS = ['Ticket', 'Espèces', 'CB', 'Chèque'];
 
-export default function PaymentModal({ user, selectedTable, orders, setOrders, setIsPaymentModalOpen, removeItemsFromOrder, ticketNumber }) {
+export default function PaymentModal({ user, selectedTable, orders, setOrders, 
+  setIsPaymentModalOpen, removeItemsFromOrder, ticketNumber, totalTTC, totalHT, totalTVA, tvaDetails }) {
   const [selectedQuantities, setSelectedQuantities] = useState({});
   const [showReceipt, setShowReceipt] = useState(false);
   const [paidItems, setPaidItems] = useState([]);
@@ -20,6 +21,12 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders, s
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
+
+  // console.log(totalTTC)
+  //  console.log(totalHT)
+  //    console.log(totalTVA)
+  //     console.log(tvaDetails)
+  //      console.log(orders)
 
 const generateBills = async () => {
   const doc = new jsPDF();
@@ -55,6 +62,27 @@ const generateBills = async () => {
   const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
   y += 10;
+
+    y += 10;
+  doc.text("Détail TVA :", 10, y);
+  y += 10;
+
+  const tvaMap = {};
+  paidItems.forEach(item => {
+    const rate = item.tva;
+    const total = item.price * item.quantity;
+    const ht = total / (1 + rate / 100);
+    const tva = total - ht;
+
+    if (!tvaMap[rate]) tvaMap[rate] = 0;
+    tvaMap[rate] += tva;
+  });
+
+  Object.entries(tvaMap).forEach(([rate, amount]) => {
+    doc.text(`TVA ${rate}% : ${amount.toFixed(2)} €`, 10, y);
+    y += 10;
+  });
+
 
   doc.text("Merci de votre visite !", 10, y);
   y += 10;
@@ -165,6 +193,7 @@ const generateBills = async () => {
 
   const tableOrders = orders.find(order => order.tableNumber === selectedTable);
   const items = tableOrders ? tableOrders.items : [];
+  // console.log(items)
 
   const itemsWithIds = useMemo(() => {
     return items.map((item, index) => ({

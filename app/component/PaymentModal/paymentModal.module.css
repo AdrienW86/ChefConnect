@@ -221,8 +221,9 @@
 
 .btnDownload {
     color: white;
+    width: 150px;
     padding: 4px;
-    background-color: red ;
+    background-color: rgb(1, 78, 24) ;
 }
 
 .btnDownload2 {
@@ -249,5 +250,5 @@
     text-align: center;
     padding: 4px;
     color: white;
-    background-color: rgb(110, 2, 2);
+    background-color: rgb(224, 0, 0);
 }

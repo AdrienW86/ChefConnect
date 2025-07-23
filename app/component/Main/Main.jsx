@@ -16,11 +16,7 @@ export default function Main({ user }) {
   const [tableNumber, setTableNumber] = useState("");
 
   useEffect(() => {
-    console.log("Type de session:", typeof session);
-    console.log("Valeur de session:", session);
-
     if (!user?.userId) return;
-
     fetch(`/api/orders?userId=${user.userId}`)
       .then(res => res.json())
       .then(data => {
