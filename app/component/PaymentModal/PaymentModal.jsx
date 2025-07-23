@@ -33,7 +33,7 @@ const generateBills = async () => {
   let y = 10;
 
   doc.setFontSize(14);
-  doc.text("PICARFRITES", 10, y);
+  doc.text("SARL PICARFRITES", 10, y);
   y += 10;
 
   doc.setFontSize(10);
@@ -59,15 +59,14 @@ const generateBills = async () => {
   doc.text("------------------------------------------", 10, y);
   y += 10;
 
-  const total = paidItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
-  y += 10;
-
-    y += 10;
+  // 👉 Détail TVA
   doc.text("Détail TVA :", 10, y);
   y += 10;
 
   const tvaMap = {};
+  let totalHT = 0;
+  let totalTVA = 0;
+
   paidItems.forEach(item => {
     const rate = item.tva;
     const total = item.price * item.quantity;
@@ -76,13 +75,25 @@ const generateBills = async () => {
 
     if (!tvaMap[rate]) tvaMap[rate] = 0;
     tvaMap[rate] += tva;
+
+    totalHT += ht;
+    totalTVA += tva;
   });
+
+  doc.text(`Total HT : ${totalHT.toFixed(2)} €`, 10, y);
+  y += 10;
 
   Object.entries(tvaMap).forEach(([rate, amount]) => {
     doc.text(`TVA ${rate}% : ${amount.toFixed(2)} €`, 10, y);
     y += 10;
   });
 
+  doc.text(`Total TVA : ${totalTVA.toFixed(2)} €`, 10, y);
+  y += 10;
+
+  const totalTTC = totalHT + totalTVA;
+  doc.text(`Total TTC : ${totalTTC.toFixed(2)} €`, 10, y);
+  y += 10;
 
   doc.text("Merci de votre visite !", 10, y);
   y += 10;
@@ -108,6 +119,7 @@ const generateBills = async () => {
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
   const generateNote = async () => {
   const doc = new jsPDF();
