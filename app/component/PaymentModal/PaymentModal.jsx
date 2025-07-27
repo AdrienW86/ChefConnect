@@ -97,6 +97,12 @@ const generateBills = async () => {
 
   y = drawLineSeparator(y);
 
+   doc.text("Total HT :", leftMargin, y);
+  doc.text(`${totalHT.toFixed(2)} €`, pageWidth - rightMargin - doc.getTextWidth(`${totalHT.toFixed(2)} €`), y);
+  y += 7;
+
+   y = drawLineSeparator(y);
+
   // Détail TVA
   doc.text("Détail TVA :", leftMargin, y);
   y += 7;
@@ -118,11 +124,9 @@ const generateBills = async () => {
     totalTVA += tva;
   });
 
-  
 
-  doc.text("Total HT :", leftMargin, y);
-  doc.text(`${totalHT.toFixed(2)} €`, pageWidth - rightMargin - doc.getTextWidth(`${totalHT.toFixed(2)} €`), y);
-  y += 7;
+
+ 
 
   Object.entries(tvaMap).forEach(([rate, amount]) => {
     doc.text(`TVA ${rate}% :`, leftMargin, y);
@@ -130,14 +134,21 @@ const generateBills = async () => {
     y += 7;
   });
 
+
+   y = drawLineSeparator(y);
+
   doc.text("Total TVA :", leftMargin, y);
   doc.text(`${totalTVA.toFixed(2)} €`, pageWidth - rightMargin - doc.getTextWidth(`${totalTVA.toFixed(2)} €`), y);
   y += 7;
+
+   y = drawLineSeparator(y);
 
   const totalTTC = totalHT + totalTVA;
   doc.text("Total TTC :", leftMargin, y);
   doc.text(`${totalTTC.toFixed(2)} €`, pageWidth - rightMargin - doc.getTextWidth(`${totalTTC.toFixed(2)} €`), y);
   y += 10;
+
+   y = drawLineSeparator(y);
 
   doc.text("Modes de paiement :", leftMargin, y);
   y += 7;
@@ -151,10 +162,11 @@ const generateBills = async () => {
   });
 
   y = drawLineSeparator(y);
-
+doc.setFontSize(20);
   centerText("Merci de votre visite !", y);
   y += 7;
 
+  doc.setFontSize(14);
   // (Optionnel) Infos légales en bas
   centerText("Code NAF/APE : 56A", y); y += 7;
   centerText("SIRET : 78850754900038", y); y += 7;

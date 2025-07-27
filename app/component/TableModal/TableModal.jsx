@@ -242,6 +242,7 @@ const handleShare = async () => {
   y = drawLineSeparator(y);
 
   // 👋 Message de fin
+  doc.setFontSize(20);
   centerText("Merci de votre visite !", y);
 
   // 📄 Création du PDF
