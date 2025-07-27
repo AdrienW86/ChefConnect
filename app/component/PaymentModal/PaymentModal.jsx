@@ -165,90 +165,84 @@ const generateBills = async () => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 10;
-  const leftMargin = 10;
-  const rightMargin = 10;
 
-  // Fonction pour centrer un texte horizontalement
-  const centerText = (text, y) => {
+  // Fonction utilitaire pour centrer un texte
+  const centerText = (text, yPos) => {
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
-    doc.text(text, x, y);
+    doc.text(text, x, yPos);
   };
 
-  // Fonction pour dessiner une ligne pointillée avec marge en bas
-  const drawLineSeparator = (y) => {
-    const startX = leftMargin;
-    const endX = pageWidth - rightMargin;
-
-    doc.setLineDashPattern([1, 1], 0);
-    doc.line(startX, y, endX, y);
-    doc.setLineDashPattern([], 0);
-
-    return y + 7;
-  };
-
+  // En-tête centré
   doc.setFontSize(20);
   centerText("PICARFRITES", y);
-  y += 8;
+  y += 7;
 
   doc.setFontSize(10);
   centerText("26 avenue de Perpignan, 66280 Saleilles", y);
-  y += 8;
+  y += 7;
 
   centerText(`Note n° : ${ticketNumber}`, y);
-  y += 8;
+  y += 7;
 
   centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y);
   y += 10;
 
-  y = drawLineSeparator(y);
+  doc.text("------------------------------------------", 10, y);
+  y += 7;
 
+  // Produits
   paidItems.forEach((item) => {
     const total = (item.price * item.quantity).toFixed(2);
-    const leftText = `${item.name} x${item.quantity}`;
-    const rightText = `${total} €`;
-
-    doc.text(leftText, leftMargin, y);
-    const rightX = pageWidth - doc.getTextWidth(rightText) - rightMargin;
-    doc.text(rightText, rightX, y);
-    y += 8;
+    const line = `${item.name} x${item.quantity}`;
+    doc.text(line, 10, y); // aligné à gauche
+    doc.text(`${total} €`, pageWidth - 10 - doc.getTextWidth(`${total} €`), y); // aligné à droite
+    y += 7;
   });
 
-  y = drawLineSeparator(y);
+  doc.text("------------------------------------------", 10, y);
+  y += 7;
 
+  // Total TTC
   const total = paidItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-
-  const totalLabel = "Total TTC :";
-  const totalText = `${total.toFixed(2)} €`;
-
-  doc.text(totalLabel, leftMargin, y);
-  doc.text(totalText, pageWidth - doc.getTextWidth(totalText) - rightMargin, y);
+  doc.text("Total TTC :", 10, y);
+  doc.text(`${total.toFixed(2)} €`, pageWidth - 10 - doc.getTextWidth(`${total.toFixed(2)} €`), y);
   y += 10;
 
-  doc.text("Modes de paiement :", leftMargin, y);
-  y += 8;
+  // Modes de paiement
+  doc.text("Modes de paiement :", 10, y);
+  y += 7;
 
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
     if (amount > 0) {
-      const methodText = `${method} :`;
-      const amountText = `${amount.toFixed(2)} €`;
-
-      doc.text(methodText, leftMargin, y);
-      doc.text(amountText, pageWidth - doc.getTextWidth(amountText) - rightMargin, y);
-      y += 8;
+      doc.text(`${method} :`, 10, y);
+      doc.text(`${amount.toFixed(2)} €`, pageWidth - 10 - doc.getTextWidth(`${amount.toFixed(2)} €`), y);
+      y += 7;
     }
   });
 
-  y += 10;
+  y += 7;
   centerText("Merci de votre visite !", y);
-  y += 10;
+  y += 7;
 
+  // Infos légales en dessous
+  centerText("Code NAF/APE : 56A", y);
+  y += 7;
+  centerText("SIRET : 78850754900038", y);
+  y += 7;
+  centerText("TVA Intracom : FR52788507549", y);
+  y += 7;
+  centerText("0129785", y);
+  y += 7;
+
+  // Génération du fichier PDF
   const blob = doc.output("blob");
   const file = new File([blob], `note-${ticketNumber}.pdf`, { type: "application/pdf" });
 
+  // Partage mobile
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -262,9 +256,11 @@ const generateBills = async () => {
     }
   }
 
+  // Fallback : ouverture dans le navigateur
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
 
 
