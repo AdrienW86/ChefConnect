@@ -142,7 +142,7 @@ const generateBills = async () => {
   doc.text("26 avenue de Perpignan, 66280 Saleilles", 10, y);
   y += 8;
 
-  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  doc.text(`Note n° : ${ticketNumber}`, 10, y);
   y += 8;
 
   doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
@@ -182,7 +182,7 @@ const generateBills = async () => {
   doc.text("Merci de votre visite !", 10, y);
 
   const blob = doc.output("blob");
-  const file = new File([blob], `ticket-${ticketNumber}.pdf`, { type: "application/pdf" });
+  const file = new File([blob], `note-${ticketNumber}.pdf`, { type: "application/pdf" });
 
   // 📱 Partage sur mobile si possible
   if (navigator.canShare && navigator.canShare({ files: [file] })) {

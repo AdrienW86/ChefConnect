@@ -169,23 +169,36 @@ const handleShare = async () => {
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 15;
 
-  // 📍 Fonction pour centrer du texte
+  // 📍 Fonctions utilitaires
   const centerText = (text, y) => {
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
     doc.text(text, x, y);
   };
 
-  // 🧾 En-tête
+  const leftMargin = 15;
+  const rightMargin = 15;
+  const contentWidth = pageWidth - leftMargin - rightMargin;
+
+  const drawLineWithPrice = (label, price, y) => {
+    const priceText = `${price} €`;
+    const labelMaxWidth = contentWidth - doc.getTextWidth(priceText) - 5;
+    const truncatedLabel = doc.splitTextToSize(label, labelMaxWidth)[0];
+    doc.text(truncatedLabel, leftMargin, y);
+    const priceX = pageWidth - rightMargin - doc.getTextWidth(priceText);
+    doc.text(priceText, priceX, y);
+  };
+
+  // 🧾 En-tête centré
   doc.setFontSize(20);
   centerText("PICARFRITES", y);
   y += 10;
 
   doc.setFontSize(16);
   centerText("26 avenue de Perpignan, 66280 Saleilles", y);
-  y += 8;
+  y += 7;
 
-  centerText("06 50 72 95 88", y); // 📞 Numéro de téléphone
+  centerText("06 50 72 95 88", y);
   y += 10;
 
   centerText(`Numéro de la Table : ${selectedTable}`, y);
@@ -197,11 +210,11 @@ const handleShare = async () => {
   centerText("------------------------------------------", y);
   y += 8;
 
-  // 🧾 Liste des articles
+  // 🧾 Articles alignés à gauche/droite
   items.forEach(item => {
-    const total = (item.price * item.quantity).toFixed(2);
-    const line = `${item.name} x${item.quantity} - ${total} €`;
-    centerText(line, y);
+    const label = `${item.name} x${item.quantity}`;
+    const price = (item.price * item.quantity).toFixed(2);
+    drawLineWithPrice(label, price, y);
     y += 8;
   });
 
@@ -209,23 +222,25 @@ const handleShare = async () => {
   y += 8;
 
   // 💰 Totaux
-  centerText(`Total HT : ${Number(totalHT).toFixed(2)} €`, y);
+  drawLineWithPrice("Total HT", Number(totalHT).toFixed(2), y);
   y += 8;
 
-  centerText(`TVA : ${Number(totalTVA).toFixed(2)} €`, y);
+  drawLineWithPrice("TVA", Number(totalTVA).toFixed(2), y);
   y += 8;
 
-  centerText(`Total TTC : ${Number(totalTTC).toFixed(2)} €`, y);
+  drawLineWithPrice("Total TTC", Number(totalTTC).toFixed(2), y);
   y += 12;
 
+  // 👋 Message de fin centré
   centerText("Merci de votre visite !", y);
 
-  // 📄 Génération et partage / ouverture
+  // 📄 Création du PDF
   const blob = doc.output("blob");
   const file = new File([blob], `ticket-table-${selectedTable}.pdf`, {
     type: "application/pdf",
   });
 
+  // 📱 Partage natif si possible
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -239,9 +254,12 @@ const handleShare = async () => {
     }
   }
 
+  // 💻 Sinon, ouverture du PDF
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
+
 
 
 
