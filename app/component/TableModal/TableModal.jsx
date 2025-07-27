@@ -177,11 +177,11 @@ const handleShare = async () => {
   };
 
   // 🧾 En-tête
-  doc.setFontSize(16);
+  doc.setFontSize(20);
   centerText("PICARFRITES", y);
   y += 10;
 
-  doc.setFontSize(12);
+  doc.setFontSize(16);
   centerText("26 avenue de Perpignan, 66280 Saleilles", y);
   y += 8;
 
