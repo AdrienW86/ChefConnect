@@ -184,29 +184,33 @@ const generateBills = async () => {
     doc.line(startX, y, endX, y);
     doc.setLineDashPattern([], 0);
 
-    return y + 7; // marge de 7 en bas
+    return y + 7;
   };
 
   doc.setFontSize(20);
-  doc.text("PICARFRITES", leftMargin, y);
+  centerText("PICARFRITES", y);
   y += 8;
 
   doc.setFontSize(10);
-  doc.text("26 avenue de Perpignan, 66280 Saleilles", leftMargin, y);
+  centerText("26 avenue de Perpignan, 66280 Saleilles", y);
   y += 8;
 
-  doc.text(`Note n° : ${ticketNumber}`, leftMargin, y);
+  centerText(`Note n° : ${ticketNumber}`, y);
   y += 8;
 
-  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, leftMargin, y);
+  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y);
   y += 10;
 
   y = drawLineSeparator(y);
 
   paidItems.forEach((item) => {
     const total = (item.price * item.quantity).toFixed(2);
-    const line = `${item.name} x${item.quantity} - ${total} €`;
-    doc.text(line, leftMargin, y);
+    const leftText = `${item.name} x${item.quantity}`;
+    const rightText = `${total} €`;
+
+    doc.text(leftText, leftMargin, y);
+    const rightX = pageWidth - doc.getTextWidth(rightText) - rightMargin;
+    doc.text(rightText, rightX, y);
     y += 8;
   });
 
@@ -216,7 +220,12 @@ const generateBills = async () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  doc.text(`Total TTC : ${total.toFixed(2)} €`, leftMargin, y);
+
+  const totalLabel = "Total TTC :";
+  const totalText = `${total.toFixed(2)} €`;
+
+  doc.text(totalLabel, leftMargin, y);
+  doc.text(totalText, pageWidth - doc.getTextWidth(totalText) - rightMargin, y);
   y += 10;
 
   doc.text("Modes de paiement :", leftMargin, y);
@@ -224,7 +233,11 @@ const generateBills = async () => {
 
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
     if (amount > 0) {
-      doc.text(`${method} : ${amount.toFixed(2)} €`, leftMargin, y);
+      const methodText = `${method} :`;
+      const amountText = `${amount.toFixed(2)} €`;
+
+      doc.text(methodText, leftMargin, y);
+      doc.text(amountText, pageWidth - doc.getTextWidth(amountText) - rightMargin, y);
       y += 8;
     }
   });
@@ -236,7 +249,6 @@ const generateBills = async () => {
   const blob = doc.output("blob");
   const file = new File([blob], `note-${ticketNumber}.pdf`, { type: "application/pdf" });
 
-  // 📱 Partage sur mobile si possible
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -250,10 +262,10 @@ const generateBills = async () => {
     }
   }
 
-  // 🖥️ Sinon on ouvre dans le navigateur
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
 
 
