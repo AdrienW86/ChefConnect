@@ -27,6 +27,43 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersFromApi, setOrdersFromApi] = useState([]);
 
+
+
+  function generateObjectId() {
+  const timestamp = Math.floor(Date.now() / 1000).toString(16);
+  const random = 'xxxxxxxxxxxxxxxx'.replace(/[x]/g, () =>
+    (Math.floor(Math.random() * 16)).toString(16)
+  );
+  return timestamp + random;
+}
+
+
+
+   const handleCustomPriceWithTVA = (tvaRate) => {
+  const name = prompt(`Nom du produit (TVA ${tvaRate}%) ?`);
+  if (!name) return;
+
+  const priceInput = prompt("Prix ?");
+  const price = parseFloat(priceInput);
+  if (isNaN(price) || price <= 0) {
+    alert("Prix invalide");
+    return;
+  }
+
+  const _id = generateObjectId();
+
+  const item = {
+    _id, // 👈 ID comme MongoDB
+    name,
+    price,
+    quantity: 1,
+    tva: tvaRate,
+  };
+  console.log(item)
+
+  addItemToOrder(item,selectedTable,user.userId);
+};
+
   useEffect(() => {
     setTicketNumber(uuidv4());
   }, []);
@@ -270,14 +307,6 @@ const handleShare = async () => {
   window.open(url);
 };
 
-
-
-
-
-
-
-
-
   if (loading || loadingOrders) return <p>Chargement des données...</p>;
   if (!user) return <p>Utilisateur non connecté</p>;
   if (!selectedTable) return <p>Aucune table sélectionnée</p>;
@@ -318,6 +347,20 @@ const handleShare = async () => {
                   {category.name.toUpperCase()}
                 </button>
               ))}
+              <div className={styles.freeBox}>
+                <button
+                  className={styles.freeItem}
+                  onClick={() => handleCustomPriceWithTVA(5.5)}
+                >
+                  PRIX LIBRE (TVA 5.5%)
+                </button>         
+                <button
+                  className={styles.freeItem}
+                  onClick={() => handleCustomPriceWithTVA(10)}          
+                >
+                  PRIX LIBRE (TVA 10%)
+                </button>
+              </div>
               <div className={styles.paymentBtnContainer}>
                 <button className={styles.printBtn} onClick={handleShare}>IMPRIMER</button>
                 <button className={styles.paymentBtn} onClick={() => setIsPaymentModalOpen(true)}>PAYER</button>

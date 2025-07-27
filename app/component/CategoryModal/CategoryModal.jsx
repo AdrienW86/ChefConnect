@@ -10,6 +10,7 @@ export default function CategoryModal({ currentCategory, setIsCategoryModalOpen,
 
   const handleAddItem = (item) => {
     addItemToOrder(item);
+    console.log(item)
     setIsCategoryModalOpen(true)
   };
 

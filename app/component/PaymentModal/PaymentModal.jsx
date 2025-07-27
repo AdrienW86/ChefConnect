@@ -22,12 +22,6 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders,
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
 
-  // console.log(totalTTC)
-  //  console.log(totalHT)
-  //    console.log(totalTVA)
-  //     console.log(tvaDetails)
-  //      console.log(orders)
-
 const generateBills = async () => {
   const doc = new jsPDF({ orientation: "landscape", format: "a5" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -160,9 +154,6 @@ const generateBills = async () => {
   window.open(url);
 };
 
-
-
-
   const generateNote = async () => {
   const doc = new jsPDF({ orientation: "landscape", format: "a5" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -218,9 +209,6 @@ const generateBills = async () => {
 
   y = drawLineSeparator(y);
 
-  // Le reste de ta fonction continue normalement...
-
- // 2. Affichage du nombre de prestations sous la date
   centerText(`Nombre de prestations : ${nbPrestations}`, y);
   y += 10;
 
@@ -299,10 +287,6 @@ const generateBills = async () => {
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
-
-
-
-
 
   const closePaymentModal = () => {
     setIsPaymentModalOpen(false);
