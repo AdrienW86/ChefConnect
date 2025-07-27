@@ -149,31 +149,56 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     };
   };
 
-  const handleShare = async () => {
-    const items = mergedOrders("en cours");
-    const text = items.map(item => `• ${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€`).join("\n");
-    const summary = `Table ${selectedTable} - Total TTC: ${totalTTC.toFixed(2)}€\n\n${text}`;
+ const handleShare = async () => {
+  const items = mergedOrders("en cours");
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Ticket Table ${selectedTable}`,
-          text: summary,
-        });
-      } catch (error) {
-        console.error("Erreur de partage:", error);
-      }
-    } else {
-      alert("Le partage n'est pas pris en charge sur ce navigateur.");
-    }
-  };
-
-  if (loading || loadingOrders) return <p>Chargement des données...</p>;
-  if (!user) return <p>Utilisateur non connecté</p>;
-  if (!selectedTable) return <p>Aucune table sélectionnée</p>;
+  if (!items || items.length === 0) {
+    alert("Aucun article à partager.");
+    return;
+  }
 
   const totalTTC = calculateTotalTTC();
   const { tvaDetails, totalTVA, totalHT } = calculateTVAAndHT();
+
+  // Construire le texte du ticket
+  const lines = items.map(item =>
+    `• ${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€`
+  );
+
+  const summary = [
+    `🪑 Table ${selectedTable}`,
+    `Total TTC : ${totalTTC.toFixed(2)}€`,
+    `Total HT : ${totalHT.toFixed(2)}€`,
+    `TVA : ${totalTVA.toFixed(2)}€`,
+    "",
+    ...lines
+  ].join("\n");
+
+  // Options de partage
+  const shareData = {
+    title: `Ticket Table ${selectedTable}`,
+    text: summary
+  };
+
+  // Vérifier compatibilité de navigator.share
+  if (navigator.canShare?.(shareData)) {
+    try {
+      await navigator.share(shareData);
+    } catch (error) {
+      console.error("Erreur de partage:", error);
+    }
+  } else if (navigator.share) {
+    // Pour compatibilité minimale
+    try {
+      await navigator.share(shareData);
+    } catch (error) {
+      console.error("Erreur de partage:", error);
+    }
+  } else {
+    alert("Le partage n'est pas pris en charge sur ce navigateur.");
+  }
+};
+
 
   return (
     <>

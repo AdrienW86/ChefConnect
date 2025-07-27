@@ -130,7 +130,6 @@ const generateBills = async () => {
   window.open(url);
 };
 
-
   const generateNote = async () => {
   const doc = new jsPDF();
   let y = 10;
