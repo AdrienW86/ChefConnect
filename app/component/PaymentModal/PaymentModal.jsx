@@ -33,7 +33,7 @@ const generateBills = async () => {
   let y = 10;
 
   doc.setFontSize(14);
-  doc.text("SARL PICARFRITES", 10, y);
+  doc.text("SARL PICARFRITES", 20, y);
   y += 10;
 
   doc.setFontSize(10);
@@ -134,7 +134,7 @@ const generateBills = async () => {
   const doc = new jsPDF();
   let y = 10;
 
-  doc.setFontSize(14);
+  doc.setFontSize(20);
   doc.text("PICARFRITES", 10, y);
   y += 8;
 

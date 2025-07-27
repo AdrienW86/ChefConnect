@@ -169,6 +169,11 @@ const handleShare = async () => {
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 15;
 
+  // 📍 Marges et calculs
+  const leftMargin = 15;
+  const rightMargin = 15;
+  const contentWidth = pageWidth - leftMargin - rightMargin;
+
   // 📍 Fonctions utilitaires
   const centerText = (text, y) => {
     const textWidth = doc.getTextWidth(text);
@@ -176,9 +181,12 @@ const handleShare = async () => {
     doc.text(text, x, y);
   };
 
-  const leftMargin = 15;
-  const rightMargin = 15;
-  const contentWidth = pageWidth - leftMargin - rightMargin;
+  const drawLineSeparator = (y) => {
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.5);
+    doc.line(leftMargin, y, pageWidth - rightMargin, y);
+    return y + 5;
+  };
 
   const drawLineWithPrice = (label, price, y) => {
     const priceText = `${price} €`;
@@ -194,44 +202,43 @@ const handleShare = async () => {
   centerText("PICARFRITES", y);
   y += 10;
 
-  doc.setFontSize(16);
+  doc.setFontSize(14);
   centerText("26 avenue de Perpignan, 66280 Saleilles", y);
   y += 7;
 
   centerText("06 50 72 95 88", y);
-  y += 10;
-
-  centerText(`Numéro de la Table : ${selectedTable}`, y);
   y += 8;
+
+  centerText(`Table : ${selectedTable}`, y);
+  y += 7;
 
   centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y);
   y += 8;
 
-  centerText("------------------------------------------", y);
-  y += 8;
+  y = drawLineSeparator(y);
 
-  // 🧾 Articles alignés à gauche/droite
+  // 🧾 Liste des articles alignée
+  doc.setFontSize(12);
   items.forEach(item => {
     const label = `${item.name} x${item.quantity}`;
     const price = (item.price * item.quantity).toFixed(2);
     drawLineWithPrice(label, price, y);
-    y += 8;
+    y += 7;
   });
 
-  centerText("------------------------------------------", y);
-  y += 8;
+  y = drawLineSeparator(y);
 
   // 💰 Totaux
   drawLineWithPrice("Total HT", Number(totalHT).toFixed(2), y);
-  y += 8;
-
+  y += 7;
   drawLineWithPrice("TVA", Number(totalTVA).toFixed(2), y);
-  y += 8;
-
+  y += 7;
   drawLineWithPrice("Total TTC", Number(totalTTC).toFixed(2), y);
-  y += 12;
+  y += 10;
 
-  // 👋 Message de fin centré
+  y = drawLineSeparator(y);
+
+  // 👋 Message de fin
   centerText("Merci de votre visite !", y);
 
   // 📄 Création du PDF
@@ -254,7 +261,7 @@ const handleShare = async () => {
     }
   }
 
-  // 💻 Sinon, ouverture du PDF
+  // 💻 Sinon : ouverture du PDF
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
