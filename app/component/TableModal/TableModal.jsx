@@ -149,7 +149,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     };
   };
 
- const handleShare = async () => {
+const handleShare = async () => {
   const items = mergedOrders("en cours");
 
   if (!items || items.length === 0) {
@@ -168,8 +168,8 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   const summary = [
     `🪑 Table ${selectedTable}`,
     `Total TTC : ${totalTTC.toFixed(2)}€`,
-    `Total HT : ${totalHT.toFixed(2)}€`,
-    `TVA : ${totalTVA.toFixed(2)}€`,
+    `Total HT : ${totalHT}€`,
+    `TVA : ${totalTVA}€`,
     "",
     ...lines
   ].join("\n");
@@ -199,6 +199,16 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   }
 };
 
+
+
+
+
+  if (loading || loadingOrders) return <p>Chargement des données...</p>;
+  if (!user) return <p>Utilisateur non connecté</p>;
+  if (!selectedTable) return <p>Aucune table sélectionnée</p>;
+
+  const totalTTC = calculateTotalTTC();
+  const { tvaDetails, totalTVA, totalHT } = calculateTVAAndHT();
 
   return (
     <>
