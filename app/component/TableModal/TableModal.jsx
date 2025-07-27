@@ -6,7 +6,6 @@ import { useRestaurant } from "@/app/Context/RestaurantContext";
 import { v4 as uuidv4 } from 'uuid';
 import PaymentModal from "../PaymentModal/PaymentModal";
 import CategoryModal from "../CategoryModal/CategoryModal";
-import PrintTicket from "../PrintTicket/PrintTicket";
 import jsPDF from "jspdf";
 import styles from "./tableModal.module.css";
 
@@ -27,7 +26,6 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [ordersFromApi, setOrdersFromApi] = useState([]);
-  const [isPrintOpen, setIsPrintOpen] = useState(false);
 
   useEffect(() => {
     setTicketNumber(uuidv4());
@@ -149,9 +147,6 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
       totalHT: totalHT.toFixed(2),
     };
   };
-
-
-
 
 const handleShare = async () => {
   const items = mergedOrders("en cours");
@@ -323,17 +318,13 @@ const handleShare = async () => {
                 </button>
               ))}
               <div className={styles.paymentBtnContainer}>
-                <button className={styles.printBtn} onClick={setIsPrintOpen}>IMPRIMER</button>
+                <button className={styles.printBtn} onClick={handleShare}>IMPRIMER</button>
                 <button className={styles.paymentBtn} onClick={() => setIsPaymentModalOpen(true)}>PAYER</button>
-                <button className={styles.shareBtn} onClick={handleShare}>PARTAGER</button> 
               </div>
             </div>
           </div>
         </div>
       </div>
-      {isPrintOpen && (
-        <PrintTicket orders={currentOrders} totalTTC={totalTTC} totalHT={totalHT} totalTVA={totalTVA} tvaDetails={tvaDetails} ticketNumber={ticketNumber} selectedTable={selectedTable} setIsPrintOpen={setIsPrintOpen} />
-      )}
       {isPaymentModalOpen && (
         <PaymentModal ticketNumber={ticketNumber} user={user} selectedTable={selectedTable} orders={currentOrders} setOrders={setOrders} totalTTC={totalTTC} totalHT={totalHT} totalTVA={totalTVA} tvaDetails={tvaDetails} removeItemsFromOrder={removeItemsFromOrder} setIsPaymentModalOpen={setIsPaymentModalOpen} />
       )}

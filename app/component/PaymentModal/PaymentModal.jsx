@@ -30,37 +30,65 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders,
 
 const generateBills = async () => {
   const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
   let y = 10;
 
+  const leftMargin = 10;
+  const rightMargin = 10;
+  const contentWidth = pageWidth - leftMargin - rightMargin;
+
+  // Fonction pour centrer un texte horizontalement
+  const centerText = (text, y) => {
+    const textWidth = doc.getTextWidth(text);
+    const x = (pageWidth - textWidth) / 2;
+    doc.text(text, x, y);
+  };
+
+  // Fonction pour dessiner une ligne pointillée avec marge en bas
+  const drawLineSeparator = (y) => {
+    const startX = leftMargin;
+    const endX = pageWidth - rightMargin;
+
+    doc.setLineDashPattern([1, 1], 0); // ligne pointillée 1pt trait, 1pt espace
+    doc.line(startX, y, endX, y);
+    doc.setLineDashPattern([], 0); // réinitialise à ligne pleine
+
+    return y + 7; // ajoute 7 unités de marge en bas
+  };
+
   doc.setFontSize(14);
-  doc.text("SARL PICARFRITES", 20, y);
+  doc.text("SARL PICARFRITES", leftMargin, y);
   y += 10;
 
   doc.setFontSize(10);
-  doc.text("26 avenue de Perpignan, 66280 Saleilles", 10, y);
+  doc.text("26 avenue de Perpignan, 66280 Saleilles", leftMargin, y);
   y += 10;
 
-  doc.text(`Ticket n° : ${ticketNumber}`, 10, y);
+  centerText("06 50 72 95 88", y);
+  y += 8;
+
+  centerText(`Table : ${selectedTable}`, y);
+  y += 7;
+
+  doc.text(`Ticket n° : ${ticketNumber}`, leftMargin, y);
   y += 10;
 
-  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
+  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, leftMargin, y);
   y += 10;
 
-  doc.text("------------------------------------------", 10, y);
-  y += 10;
+  y = drawLineSeparator(y);
 
   // Affichage des items payés
   paidItems.forEach(item => {
     const total = (item.price * item.quantity).toFixed(2);
-    doc.text(`${item.name} x${item.quantity} - ${total} €`, 10, y);
+    doc.text(`${item.name} x${item.quantity} - ${total} €`, leftMargin, y);
     y += 10;
   });
 
-  doc.text("------------------------------------------", 10, y);
-  y += 10;
+  y = drawLineSeparator(y);
 
   // 👉 Détail TVA
-  doc.text("Détail TVA :", 10, y);
+  doc.text("Détail TVA :", leftMargin, y);
   y += 10;
 
   const tvaMap = {};
@@ -80,32 +108,34 @@ const generateBills = async () => {
     totalTVA += tva;
   });
 
-  doc.text(`Total HT : ${totalHT.toFixed(2)} €`, 10, y);
+  doc.text(`Total HT : ${totalHT.toFixed(2)} €`, leftMargin, y);
   y += 10;
 
   Object.entries(tvaMap).forEach(([rate, amount]) => {
-    doc.text(`TVA ${rate}% : ${amount.toFixed(2)} €`, 10, y);
+    doc.text(`TVA ${rate}% : ${amount.toFixed(2)} €`, leftMargin, y);
     y += 10;
   });
 
-  doc.text(`Total TVA : ${totalTVA.toFixed(2)} €`, 10, y);
+  doc.text(`Total TVA : ${totalTVA.toFixed(2)} €`, leftMargin, y);
   y += 10;
 
   const totalTTC = totalHT + totalTVA;
-  doc.text(`Total TTC : ${totalTTC.toFixed(2)} €`, 10, y);
+  doc.text(`Total TTC : ${totalTTC.toFixed(2)} €`, leftMargin, y);
   y += 10;
 
-  doc.text("Modes de paiement :", 10, y);
+  doc.text("Modes de paiement :", leftMargin, y);
   y += 8;
 
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
     if (amount > 0) {
-      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
+      doc.text(`${method} : ${amount.toFixed(2)} €`, leftMargin, y);
       y += 8;
     }
   });
 
-  doc.text("Merci de votre visite !", 10, y);
+  y = drawLineSeparator(y);
+
+  centerText("Merci de votre visite !", y);
   y += 10;
 
   const blob = doc.output("blob");
@@ -130,56 +160,78 @@ const generateBills = async () => {
   window.open(url);
 };
 
+
   const generateNote = async () => {
   const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
   let y = 10;
+  const leftMargin = 10;
+  const rightMargin = 10;
+
+  // Fonction pour centrer un texte horizontalement
+  const centerText = (text, y) => {
+    const textWidth = doc.getTextWidth(text);
+    const x = (pageWidth - textWidth) / 2;
+    doc.text(text, x, y);
+  };
+
+  // Fonction pour dessiner une ligne pointillée avec marge en bas
+  const drawLineSeparator = (y) => {
+    const startX = leftMargin;
+    const endX = pageWidth - rightMargin;
+
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(startX, y, endX, y);
+    doc.setLineDashPattern([], 0);
+
+    return y + 7; // marge de 7 en bas
+  };
 
   doc.setFontSize(20);
-  doc.text("PICARFRITES", 10, y);
+  doc.text("PICARFRITES", leftMargin, y);
   y += 8;
 
   doc.setFontSize(10);
-  doc.text("26 avenue de Perpignan, 66280 Saleilles", 10, y);
+  doc.text("26 avenue de Perpignan, 66280 Saleilles", leftMargin, y);
   y += 8;
 
-  doc.text(`Note n° : ${ticketNumber}`, 10, y);
+  doc.text(`Note n° : ${ticketNumber}`, leftMargin, y);
   y += 8;
 
-  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
+  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, leftMargin, y);
   y += 10;
 
-  doc.text("------------------------------------------", 10, y);
-  y += 8;
+  y = drawLineSeparator(y);
 
   paidItems.forEach((item) => {
     const total = (item.price * item.quantity).toFixed(2);
-    const line = `produit x${item.quantity} - ${total} €`;
-    doc.text(line, 10, y);
+    const line = `${item.name} x${item.quantity} - ${total} €`;
+    doc.text(line, leftMargin, y);
     y += 8;
   });
 
-  doc.text("------------------------------------------", 10, y);
-  y += 8;
+  y = drawLineSeparator(y);
 
   const total = paidItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
+  doc.text(`Total TTC : ${total.toFixed(2)} €`, leftMargin, y);
   y += 10;
 
-  doc.text("Modes de paiement :", 10, y);
+  doc.text("Modes de paiement :", leftMargin, y);
   y += 8;
 
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
     if (amount > 0) {
-      doc.text(`${method} : ${amount.toFixed(2)} €`, 10, y);
+      doc.text(`${method} : ${amount.toFixed(2)} €`, leftMargin, y);
       y += 8;
     }
   });
 
   y += 10;
-  doc.text("Merci de votre visite !", 10, y);
+  centerText("Merci de votre visite !", y);
+  y += 10;
 
   const blob = doc.output("blob");
   const file = new File([blob], `note-${ticketNumber}.pdf`, { type: "application/pdf" });
@@ -202,6 +254,7 @@ const generateBills = async () => {
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
 
   const closePaymentModal = () => {
