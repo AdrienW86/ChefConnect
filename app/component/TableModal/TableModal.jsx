@@ -181,12 +181,17 @@ const handleShare = async () => {
     doc.text(text, x, y);
   };
 
-  const drawLineSeparator = (y) => {
-    doc.setDrawColor(0);
-    doc.setLineWidth(0.5);
-    doc.line(leftMargin, y, pageWidth - rightMargin, y);
-    return y + 5;
-  };
+ const drawLineSeparator = (y) => {
+  const startX = leftMargin;
+  const endX = pageWidth - rightMargin;
+
+  doc.setLineDashPattern([1, 1], 0); // 👉 pointillés : 1pt trait, 1pt espace
+  doc.line(startX, y, endX, y);
+  doc.setLineDashPattern([], 0); // 🔁 réinitialise à ligne pleine
+
+  return y + 5; // ajoute un petit espace après la ligne
+};
+
 
   const drawLineWithPrice = (label, price, y) => {
     const priceText = `${price} €`;
