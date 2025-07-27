@@ -37,6 +37,11 @@ const generateBills = async () => {
   const rightMargin = 15;
   const contentWidth = pageWidth - leftMargin - rightMargin;
 
+   const tvaMap = {};
+  let totalHT = 0;
+  let totalTVA = 0;
+
+
    const centerText = (text, y) => {
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
@@ -107,10 +112,7 @@ const generateBills = async () => {
   doc.text("Détail TVA :", leftMargin, y);
   y += 7;
 
-  const tvaMap = {};
-  let totalHT = 0;
-  let totalTVA = 0;
-
+ 
   paidItems.forEach(item => {
     const rate = item.tva;
     const total = item.price * item.quantity;
