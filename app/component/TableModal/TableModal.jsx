@@ -152,6 +152,7 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
 
 
 
+
 const handleShare = async () => {
   const items = mergedOrders("en cours");
 
@@ -166,9 +167,9 @@ const handleShare = async () => {
   // 📄 Création du PDF au format A5 paysage
   const doc = new jsPDF({ orientation: "landscape", format: "a5" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  let y = 10;
+  let y = 15;
 
-  // Fonction pour centrer du texte
+  // 📍 Fonction pour centrer du texte
   const centerText = (text, y) => {
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
@@ -176,13 +177,16 @@ const handleShare = async () => {
   };
 
   // 🧾 En-tête
-  doc.setFontSize(14);
+  doc.setFontSize(16);
   centerText("PICARFRITES", y);
-  y += 8;
+  y += 10;
 
-  doc.setFontSize(10);
+  doc.setFontSize(12);
   centerText("26 avenue de Perpignan, 66280 Saleilles", y);
   y += 8;
+
+  centerText("06 50 72 95 88", y); // 📞 Numéro de téléphone
+  y += 10;
 
   centerText(`Numéro de la Table : ${selectedTable}`, y);
   y += 8;
@@ -193,7 +197,7 @@ const handleShare = async () => {
   centerText("------------------------------------------", y);
   y += 8;
 
-  // 📋 Liste des articles
+  // 🧾 Liste des articles
   items.forEach(item => {
     const total = (item.price * item.quantity).toFixed(2);
     const line = `${item.name} x${item.quantity} - ${total} €`;
@@ -212,11 +216,11 @@ const handleShare = async () => {
   y += 8;
 
   centerText(`Total TTC : ${Number(totalTTC).toFixed(2)} €`, y);
-  y += 10;
+  y += 12;
 
   centerText("Merci de votre visite !", y);
 
-  // 📄 Génération et partage ou affichage
+  // 📄 Génération et partage / ouverture
   const blob = doc.output("blob");
   const file = new File([blob], `ticket-table-${selectedTable}.pdf`, {
     type: "application/pdf",
@@ -238,6 +242,7 @@ const handleShare = async () => {
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
 
 
