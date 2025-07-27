@@ -231,8 +231,10 @@ const handleShare = async () => {
   // 💰 Totaux
   drawLineWithPrice("Total HT", Number(totalHT).toFixed(2), y);
   y += 7;
+  y = drawLineSeparator(y);
   drawLineWithPrice("TVA", Number(totalTVA).toFixed(2), y);
   y += 7;
+  y = drawLineSeparator(y);
   drawLineWithPrice("Total TTC", Number(totalTTC).toFixed(2), y);
   y += 10;
 
