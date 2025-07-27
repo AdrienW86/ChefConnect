@@ -164,88 +164,125 @@ const generateBills = async () => {
 
 
   const generateNote = async () => {
-  const doc = new jsPDF();
+  const doc = new jsPDF({ orientation: "landscape", format: "a5" });
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 10;
 
-  // Fonction utilitaire pour centrer un texte
-  const centerText = (text, yPos) => {
+  const leftMargin = 15;
+  const rightMargin = 15;
+  const contentWidth = pageWidth - leftMargin - rightMargin;
+
+  // 1. Demande à l'utilisateur le nombre de prestations
+  let nbPrestations = prompt("Nombre de prestations ?");
+  // Si l'utilisateur annule ou entre une valeur non numérique, on met 0
+  if (nbPrestations === null || isNaN(nbPrestations)) {
+    nbPrestations = 0;
+  }
+
+  const tvaMap = {};
+  let totalHT = 0;
+  let totalTVA = 0;
+
+  const centerText = (text, y) => {
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
-    doc.text(text, x, yPos);
+    doc.text(text, x, y);
   };
 
-  // En-tête centré
+  const drawLineSeparator = (y) => {
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(leftMargin, y, pageWidth - rightMargin, y);
+    doc.setLineDashPattern([], 0);
+    return y + 7;
+  };
+
+  const drawLineWithPrice = (label, price, y) => {
+    const priceText = `${price} €`;
+    const labelMaxWidth = contentWidth - doc.getTextWidth(priceText) - 5;
+    const truncatedLabel = doc.splitTextToSize(label, labelMaxWidth)[0];
+    doc.text(truncatedLabel, leftMargin, y);
+    const priceX = pageWidth - rightMargin - doc.getTextWidth(priceText);
+    doc.text(priceText, priceX, y);
+  };
+
+  // Header
   doc.setFontSize(20);
-  centerText("PICARFRITES", y);
-  y += 7;
+  centerText("SARL PICARFRITES", y); y += 10;
 
   doc.setFontSize(10);
-  centerText("26 avenue de Perpignan, 66280 Saleilles", y);
-  y += 7;
+  centerText("26 avenue de Perpignan, 66280 Saleilles", y); y += 7;
+  centerText("06 50 72 95 88", y); y += 8;
+  centerText(`Table : ${selectedTable}`, y); y += 7;
+  centerText(`Ticket n° : ${ticketNumber}`, y); y += 7;
+  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y); y += 7;
 
-  centerText(`Note n° : ${ticketNumber}`, y);
-  y += 7;
+  y = drawLineSeparator(y);
 
-  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y);
+  // Le reste de ta fonction continue normalement...
+
+ // 2. Affichage du nombre de prestations sous la date
+  centerText(`Nombre de prestations : ${nbPrestations}`, y);
   y += 10;
 
-  doc.text("------------------------------------------", 10, y);
-  y += 7;
+  y = drawLineSeparator(y);
 
-  // Produits
-  paidItems.forEach((item) => {
-    const total = (item.price * item.quantity).toFixed(2);
-    const line = `${item.name} x${item.quantity}`;
-    doc.text(line, 10, y); // aligné à gauche
-    doc.text(`${total} €`, pageWidth - 10 - doc.getTextWidth(`${total} €`), y); // aligné à droite
+  // Calcul TVA et HT
+  paidItems.forEach(item => {
+    const rate = item.tva;
+    const total = item.price * item.quantity;
+    const ht = total / (1 + rate / 100);
+    const tva = total - ht;
+
+    if (!tvaMap[rate]) tvaMap[rate] = 0;
+    tvaMap[rate] += tva;
+
+    totalHT += ht;
+    totalTVA += tva;
+  });
+
+  drawLineWithPrice("Total HT :", totalHT.toFixed(2), y); y += 7;
+  y = drawLineSeparator(y);
+
+  doc.text("Détail TVA :", leftMargin, y); y += 7;
+  Object.entries(tvaMap).forEach(([rate, amount]) => {
+    drawLineWithPrice(`TVA ${rate}% :`, amount.toFixed(2), y);
     y += 7;
   });
 
-  doc.text("------------------------------------------", 10, y);
-  y += 7;
+  y = drawLineSeparator(y);
+  drawLineWithPrice("Total TVA :", totalTVA.toFixed(2), y); y += 7;
 
-  // Total TTC
-  const total = paidItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  doc.text("Total TTC :", 10, y);
-  doc.text(`${total.toFixed(2)} €`, pageWidth - 10 - doc.getTextWidth(`${total.toFixed(2)} €`), y);
-  y += 10;
+  y = drawLineSeparator(y);
+  const totalTTC = totalHT + totalTVA;
+  drawLineWithPrice("Total TTC :", totalTTC.toFixed(2), y); y += 10;
 
-  // Modes de paiement
-  doc.text("Modes de paiement :", 10, y);
-  y += 7;
+  y = drawLineSeparator(y);
 
+  // Paiements
+  doc.text("Modes de paiement :", leftMargin, y); y += 7;
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
     if (amount > 0) {
-      doc.text(`${method} :`, 10, y);
-      doc.text(`${amount.toFixed(2)} €`, pageWidth - 10 - doc.getTextWidth(`${amount.toFixed(2)} €`), y);
+      drawLineWithPrice(`${method} :`, amount.toFixed(2), y);
       y += 7;
     }
   });
 
-  y += 7;
+  y = drawLineSeparator(y);
+
+  // Merci + infos légales
   doc.setFontSize(20);
-  centerText("Merci de votre visite !", y);
-  y += 7;
+  centerText("Merci de votre visite !", y); y += 7;
 
-  // Infos légales en dessous
-  centerText("Code NAF/APE : 56A", y);
-  y += 7;
-  centerText("SIRET : 78850754900038", y);
-  y += 7;
-  centerText("TVA Intracom : FR52788507549", y);
-  y += 7;
-  centerText("0129785", y);
-  y += 7;
+  doc.setFontSize(14);
+  centerText("Code NAF/APE : 56A", y); y += 7;
+  centerText("SIRET : 78850754900038", y); y += 7;
+  centerText("TVA Intracom : FR52788507549", y); y += 7;
+  centerText("0129785", y); y += 7;
 
-  // Génération du fichier PDF
+  // Export
   const blob = doc.output("blob");
-  const file = new File([blob], `note-${ticketNumber}.pdf`, { type: "application/pdf" });
+  const file = new File([blob], `ticket-${ticketNumber}.pdf`, { type: "application/pdf" });
 
-  // Partage mobile
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -259,7 +296,6 @@ const generateBills = async () => {
     }
   }
 
-  // Fallback : ouverture dans le navigateur
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
