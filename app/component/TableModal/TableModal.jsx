@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import PaymentModal from "../PaymentModal/PaymentModal";
 import CategoryModal from "../CategoryModal/CategoryModal";
 import PrintTicket from "../PrintTicket/PrintTicket";
+import jsPDF from "jspdf";
 import styles from "./tableModal.module.css";
 
 export default function TableModal({ selectedTable, setIsModalOpen }) {
@@ -149,6 +150,8 @@ export default function TableModal({ selectedTable, setIsModalOpen }) {
     };
   };
 
+
+
 const handleShare = async () => {
   const items = mergedOrders("en cours");
 
@@ -160,44 +163,75 @@ const handleShare = async () => {
   const totalTTC = calculateTotalTTC();
   const { tvaDetails, totalTVA, totalHT } = calculateTVAAndHT();
 
-  // Construire le texte du ticket
-  const lines = items.map(item =>
-    `• ${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€`
-  );
+  const doc = new jsPDF();
+  let y = 10;
 
-  const summary = [
-    `🪑 Table ${selectedTable}`,
-    `Total TTC : ${totalTTC.toFixed(2)}€`,
-    `Total HT : ${totalHT}€`,
-    `TVA : ${totalTVA}€`,
-    "",
-    ...lines
-  ].join("\n");
+  // 🧾 En-tête
+  doc.setFontSize(14);
+  doc.text("Nom de votre restaurant", 10, y); // ou un logo
+  y += 8;
 
-  // Options de partage
-  const shareData = {
-    title: `Ticket Table ${selectedTable}`,
-    text: summary
-  };
+  doc.setFontSize(10);
+  doc.text("Adresse de l’établissement", 10, y);
+  y += 8;
 
-  // Vérifier compatibilité de navigator.share
-  if (navigator.canShare?.(shareData)) {
+  doc.text(`🪑 Table : ${selectedTable}`, 10, y);
+  y += 8;
+
+  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
+  y += 8;
+
+  doc.text("------------------------------------------", 10, y);
+  y += 8;
+
+  // 📋 Liste des articles
+  items.forEach(item => {
+    const total = (item.price * item.quantity).toFixed(2);
+    const line = `${item.name} x${item.quantity} - ${total} €`;
+    doc.text(line, 10, y);
+    y += 8;
+  });
+
+  doc.text("------------------------------------------", 10, y);
+  y += 8;
+
+  // 💰 Totaux
+  doc.text(`Total HT : ${Number(totalHT).toFixed(2)} €`, 10, y);
+  y += 8;
+
+  doc.text(`TVA : ${Number(totalTVA).toFixed(2)} €`, 10, y);
+  y += 8;
+
+  doc.text(`Total TTC : ${Number(totalTTC).toFixed(2)} €`, 10, y);
+  y += 10;
+
+  doc.text("Merci de votre visite !", 10, y);
+
+  // 📄 Création du PDF
+  const blob = doc.output("blob");
+  const file = new File([blob], `ticket-table-${selectedTable}.pdf`, {
+    type: "application/pdf",
+  });
+
+  // 📱 Partage natif si possible
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share(shareData);
-    } catch (error) {
-      console.error("Erreur de partage:", error);
+      await navigator.share({
+        files: [file],
+        title: "Ticket de caisse",
+        text: `Ticket de la table ${selectedTable}`,
+      });
+      return;
+    } catch (err) {
+      console.error("Erreur de partage :", err);
     }
-  } else if (navigator.share) {
-    // Pour compatibilité minimale
-    try {
-      await navigator.share(shareData);
-    } catch (error) {
-      console.error("Erreur de partage:", error);
-    }
-  } else {
-    alert("Le partage n'est pas pris en charge sur ce navigateur.");
   }
+
+  // 💻 Sinon : ouverture dans un nouvel onglet
+  const url = URL.createObjectURL(blob);
+  window.open(url);
 };
+
 
 
 
