@@ -163,57 +163,65 @@ const handleShare = async () => {
   const totalTTC = calculateTotalTTC();
   const { tvaDetails, totalTVA, totalHT } = calculateTVAAndHT();
 
-  const doc = new jsPDF();
+  // 📄 Création du PDF au format A5 paysage
+  const doc = new jsPDF({ orientation: "landscape", format: "a5" });
+  const pageWidth = doc.internal.pageSize.getWidth();
   let y = 10;
+
+  // Fonction pour centrer du texte
+  const centerText = (text, y) => {
+    const textWidth = doc.getTextWidth(text);
+    const x = (pageWidth - textWidth) / 2;
+    doc.text(text, x, y);
+  };
 
   // 🧾 En-tête
   doc.setFontSize(14);
-  doc.text("Nom de votre restaurant", 10, y); // ou un logo
+  centerText("PICARFRITES", y);
   y += 8;
 
   doc.setFontSize(10);
-  doc.text("Adresse de l’établissement", 10, y);
+  centerText("26 avenue de Perpignan, 66280 Saleilles", y);
   y += 8;
 
-  doc.text(`🪑 Table : ${selectedTable}`, 10, y);
+  centerText(`Numéro de la Table : ${selectedTable}`, y);
   y += 8;
 
-  doc.text(`Date : ${new Date().toLocaleString("fr-FR")}`, 10, y);
+  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y);
   y += 8;
 
-  doc.text("------------------------------------------", 10, y);
+  centerText("------------------------------------------", y);
   y += 8;
 
   // 📋 Liste des articles
   items.forEach(item => {
     const total = (item.price * item.quantity).toFixed(2);
     const line = `${item.name} x${item.quantity} - ${total} €`;
-    doc.text(line, 10, y);
+    centerText(line, y);
     y += 8;
   });
 
-  doc.text("------------------------------------------", 10, y);
+  centerText("------------------------------------------", y);
   y += 8;
 
   // 💰 Totaux
-  doc.text(`Total HT : ${Number(totalHT).toFixed(2)} €`, 10, y);
+  centerText(`Total HT : ${Number(totalHT).toFixed(2)} €`, y);
   y += 8;
 
-  doc.text(`TVA : ${Number(totalTVA).toFixed(2)} €`, 10, y);
+  centerText(`TVA : ${Number(totalTVA).toFixed(2)} €`, y);
   y += 8;
 
-  doc.text(`Total TTC : ${Number(totalTTC).toFixed(2)} €`, 10, y);
+  centerText(`Total TTC : ${Number(totalTTC).toFixed(2)} €`, y);
   y += 10;
 
-  doc.text("Merci de votre visite !", 10, y);
+  centerText("Merci de votre visite !", y);
 
-  // 📄 Création du PDF
+  // 📄 Génération et partage ou affichage
   const blob = doc.output("blob");
   const file = new File([blob], `ticket-table-${selectedTable}.pdf`, {
     type: "application/pdf",
   });
 
-  // 📱 Partage natif si possible
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -227,7 +235,6 @@ const handleShare = async () => {
     }
   }
 
-  // 💻 Sinon : ouverture dans un nouvel onglet
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
