@@ -181,17 +181,16 @@ const handleShare = async () => {
     doc.text(text, x, y);
   };
 
- const drawLineSeparator = (y) => {
-  const startX = leftMargin;
-  const endX = pageWidth - rightMargin;
+  const drawLineSeparator = (y) => {
+    const startX = leftMargin;
+    const endX = pageWidth - rightMargin;
 
-  doc.setLineDashPattern([1, 1], 0); // 👉 pointillés : 1pt trait, 1pt espace
-  doc.line(startX, y, endX, y);
-  doc.setLineDashPattern([], 0); // 🔁 réinitialise à ligne pleine
+    doc.setLineDashPattern([1, 1], 0); // 👉 ligne pointillée : 1pt trait, 1pt espace
+    doc.line(startX, y, endX, y);
+    doc.setLineDashPattern([], 0); // 🔁 réinitialise à ligne pleine
 
-  return y + 5; // ajoute un petit espace après la ligne
-};
-
+    return y + 7; // ajoute 7 unités d’espace après la ligne (margin-bottom)
+  };
 
   const drawLineWithPrice = (label, price, y) => {
     const priceText = `${price} €`;
@@ -237,9 +236,11 @@ const handleShare = async () => {
   drawLineWithPrice("Total HT", Number(totalHT).toFixed(2), y);
   y += 7;
   y = drawLineSeparator(y);
+
   drawLineWithPrice("TVA", Number(totalTVA).toFixed(2), y);
   y += 7;
   y = drawLineSeparator(y);
+
   drawLineWithPrice("Total TTC", Number(totalTTC).toFixed(2), y);
   y += 10;
 
