@@ -360,6 +360,12 @@ const handleShare = async () => {
                 >
                   PRIX LIBRE (TVA 10%)
                 </button>
+                <button
+                  className={styles.freeItem}
+                  onClick={() => handleCustomPriceWithTVA(20)}
+                >
+                  PRIX LIBRE (TVA 20%)
+                </button> 
               </div>
               <div className={styles.paymentBtnContainer}>
                 <button className={styles.printBtn} onClick={handleShare}>IMPRIMER</button>
