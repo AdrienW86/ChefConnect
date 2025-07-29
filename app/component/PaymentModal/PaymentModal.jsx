@@ -23,64 +23,72 @@ export default function PaymentModal({ user, selectedTable, orders, setOrders,
   const [message, setMessage] = useState('');
 
 const generateBills = async () => {
-  const doc = new jsPDF({ orientation: "landscape", format: "a5" });
+  const doc = new jsPDF({ orientation: "portrait", format: "a5" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  let y = 10;
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  const leftMargin = 15;
-  const rightMargin = 15;
-  const contentWidth = pageWidth - leftMargin - rightMargin;
+  const marginX = 8;
+  let y = 8;
+  const usableWidth = pageWidth - 2 * marginX;
 
   const tvaMap = {};
   let totalHT = 0;
   let totalTVA = 0;
 
-  const centerText = (text, y) => {
+  const centerText = (text, y, fontSize = 12) => {
+    doc.setFontSize(fontSize);
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
     doc.text(text, x, y);
   };
 
-  const drawLineSeparator = (y) => {
+  const checkPageBreak = (spaceNeeded = 6) => {
+    if (y + spaceNeeded > pageHeight - 8) {
+      doc.addPage();
+      y = 8;
+    }
+  };
+
+  const drawLineSeparator = () => {
+    checkPageBreak();
     doc.setLineDashPattern([1, 1], 0);
-    doc.line(leftMargin, y, pageWidth - rightMargin, y);
+    doc.line(marginX, y, pageWidth - marginX, y);
     doc.setLineDashPattern([], 0);
-    return y + 7;
+    y += 4;
   };
 
-  const drawLineWithPrice = (label, price, y) => {
+  const drawLineWithPrice = (label, price) => {
+    checkPageBreak();
     const priceText = `${price} €`;
-    const labelMaxWidth = contentWidth - doc.getTextWidth(priceText) - 5;
-    const truncatedLabel = doc.splitTextToSize(label, labelMaxWidth)[0];
-    doc.text(truncatedLabel, leftMargin, y);
-    const priceX = pageWidth - rightMargin - doc.getTextWidth(priceText);
+    const maxLabelWidth = usableWidth - doc.getTextWidth(priceText) - 4;
+    const truncatedLabel = doc.splitTextToSize(label, maxLabelWidth)[0];
+    doc.setFontSize(10);
+    doc.text(truncatedLabel, marginX, y);
+    const priceX = pageWidth - marginX - doc.getTextWidth(priceText);
     doc.text(priceText, priceX, y);
+    y += 5;
   };
 
-  // Header
-  doc.setFontSize(20);
-  centerText("SARL PICARFRITES", y); y += 10;
+  // 🧾 En-tête
+  centerText("SARL PICARFRITES", y, 16); y += 6;
+  centerText("26 avenue de Perpignan, 66280 Saleilles", y, 10); y += 5;
+  centerText("06 50 72 95 88", y, 10); y += 5;
+  centerText(`Table : ${selectedTable}`, y, 10); y += 5;
+  centerText(`Ticket n° : ${ticketNumber}`, y, 10); y += 5;
+  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y, 10); y += 6;
 
-  doc.setFontSize(10);
-  centerText("26 avenue de Perpignan, 66280 Saleilles", y); y += 7;
-  centerText("06 50 72 95 88", y); y += 8;
-  centerText(`Table : ${selectedTable}`, y); y += 7;
-  centerText(`Ticket n° : ${ticketNumber}`, y); y += 7;
-  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y); y += 10;
+  drawLineSeparator();
 
-  y = drawLineSeparator(y);
-
-  // Articles
+  // 🧾 Articles
   paidItems.forEach(item => {
     const total = (item.price * item.quantity).toFixed(2);
     const itemText = `${item.name} x${item.quantity}`;
-    drawLineWithPrice(itemText, total, y);
-    y += 7;
+    drawLineWithPrice(itemText, total);
   });
 
-  y = drawLineSeparator(y);
+  drawLineSeparator();
 
-  // Calcul TVA et HT
+  // 🧮 Calculs TVA / HT
   paidItems.forEach(item => {
     const rate = item.tva;
     const total = item.price * item.quantity;
@@ -94,48 +102,48 @@ const generateBills = async () => {
     totalTVA += tva;
   });
 
-  drawLineWithPrice("Total HT :", totalHT.toFixed(2), y); y += 7;
-  y = drawLineSeparator(y);
+  drawLineWithPrice("Total HT :", totalHT.toFixed(2));
+  drawLineSeparator();
 
-  doc.text("Détail TVA :", leftMargin, y); y += 7;
+  doc.setFontSize(10);
+  doc.text("Détail TVA :", marginX, y); y += 5;
+
   Object.entries(tvaMap).forEach(([rate, amount]) => {
-    drawLineWithPrice(`TVA ${rate}% :`, amount.toFixed(2), y);
-    y += 7;
+    drawLineWithPrice(`TVA ${rate}% :`, amount.toFixed(2));
   });
 
-  y = drawLineSeparator(y);
-  drawLineWithPrice("Total TVA :", totalTVA.toFixed(2), y); y += 7;
+  drawLineSeparator();
+  drawLineWithPrice("Total TVA :", totalTVA.toFixed(2));
+  drawLineSeparator();
 
-  y = drawLineSeparator(y);
   const totalTTC = totalHT + totalTVA;
-  drawLineWithPrice("Total TTC :", totalTTC.toFixed(2), y); y += 10;
+  drawLineWithPrice("Total TTC :", totalTTC.toFixed(2));
+  y += 5;
+  drawLineSeparator();
 
-  y = drawLineSeparator(y);
-
-  // Paiements
-  doc.text("Modes de paiement :", leftMargin, y); y += 7;
+  // 💳 Paiements
+  doc.text("Modes de paiement :", marginX, y); y += 5;
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
     if (amount > 0) {
-      drawLineWithPrice(`${method} :`, amount.toFixed(2), y);
-      y += 7;
+      drawLineWithPrice(`${method} :`, amount.toFixed(2));
     }
   });
 
-  y = drawLineSeparator(y);
+  drawLineSeparator();
 
-  // Merci + infos légales
-  doc.setFontSize(20);
-  centerText("Merci de votre visite !", y); y += 7;
+  // 🙏 Message + infos légales
+  checkPageBreak();
+  centerText("Merci de votre visite !", y, 14); y += 6;
+  centerText("Code NAF/APE : 56A", y, 10); y += 5;
+  centerText("SIRET : 78850754900038", y, 10); y += 5;
+  centerText("TVA Intracom : FR52788507549", y, 10); y += 5;
+  centerText("0129785", y, 10); y += 5;
 
-  doc.setFontSize(14);
-  centerText("Code NAF/APE : 56A", y); y += 7;
-  centerText("SIRET : 78850754900038", y); y += 7;
-  centerText("TVA Intracom : FR52788507549", y); y += 7;
-  centerText("0129785", y); y += 7;
-
-  // Export
+  // 📄 Export PDF + Partage ou affichage
   const blob = doc.output("blob");
-  const file = new File([blob], `ticket-${ticketNumber}.pdf`, { type: "application/pdf" });
+  const file = new File([blob], `ticket-${ticketNumber}.pdf`, {
+    type: "application/pdf",
+  });
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -154,67 +162,72 @@ const generateBills = async () => {
   window.open(url);
 };
 
-  const generateNote = async () => {
-  const doc = new jsPDF({ orientation: "landscape", format: "a5" });
+
+ const generateNote = async () => {
+  const doc = new jsPDF({ orientation: "portrait", format: "a5" });
+  const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const leftMargin = 5;
+  const rightMargin = 5;
+  const contentWidth = pageWidth - leftMargin - rightMargin;
   let y = 10;
 
-  const leftMargin = 15;
-  const rightMargin = 15;
-  const contentWidth = pageWidth - leftMargin - rightMargin;
+  // Gestion saut de page
+  const checkAddPage = (spaceNeeded = 10) => {
+    if (y + spaceNeeded > pageHeight - 10) {
+      doc.addPage();
+      y = 10;
+    }
+  };
 
-  // 1. Demande à l'utilisateur le nombre de prestations
+  // Nombre de prestations
   let nbPrestations = prompt("Nombre de prestations ?");
-  // Si l'utilisateur annule ou entre une valeur non numérique, on met 0
-  if (nbPrestations === null || isNaN(nbPrestations)) {
-    nbPrestations = 0;
-  }
+  if (nbPrestations === null || isNaN(nbPrestations)) nbPrestations = 0;
 
   const tvaMap = {};
   let totalHT = 0;
   let totalTVA = 0;
 
-  const centerText = (text, y) => {
+  const centerText = (text, fontSize = 10, space = 7) => {
+    checkAddPage(space);
+    doc.setFontSize(fontSize);
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
     doc.text(text, x, y);
+    y += space;
   };
 
-  const drawLineSeparator = (y) => {
+  const drawLineSeparator = () => {
+    checkAddPage();
     doc.setLineDashPattern([1, 1], 0);
     doc.line(leftMargin, y, pageWidth - rightMargin, y);
     doc.setLineDashPattern([], 0);
-    return y + 7;
+    y += 6;
   };
 
-  const drawLineWithPrice = (label, price, y) => {
+  const drawLineWithPrice = (label, price) => {
+    checkAddPage();
     const priceText = `${price} €`;
     const labelMaxWidth = contentWidth - doc.getTextWidth(priceText) - 5;
     const truncatedLabel = doc.splitTextToSize(label, labelMaxWidth)[0];
     doc.text(truncatedLabel, leftMargin, y);
     const priceX = pageWidth - rightMargin - doc.getTextWidth(priceText);
     doc.text(priceText, priceX, y);
+    y += 6;
   };
 
-  // Header
-  doc.setFontSize(20);
-  centerText("SARL PICARFRITES", y); y += 10;
+  // HEADER
+  centerText("SARL PICARFRITES", 20, 10);
+  centerText("26 avenue de Perpignan, 66280 Saleilles");
+  centerText("06 50 72 95 88");
+  centerText(`Table : ${selectedTable}`);
+  centerText(`Ticket n° : ${ticketNumber}`);
+  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`);
+  drawLineSeparator();
+  centerText(`Nombre de prestations : ${nbPrestations}`, 10, 8);
+  drawLineSeparator();
 
-  doc.setFontSize(10);
-  centerText("26 avenue de Perpignan, 66280 Saleilles", y); y += 7;
-  centerText("06 50 72 95 88", y); y += 8;
-  centerText(`Table : ${selectedTable}`, y); y += 7;
-  centerText(`Ticket n° : ${ticketNumber}`, y); y += 7;
-  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y); y += 7;
-
-  y = drawLineSeparator(y);
-
-  centerText(`Nombre de prestations : ${nbPrestations}`, y);
-  y += 10;
-
-  y = drawLineSeparator(y);
-
-  // Calcul TVA et HT
+  // Calculs
   paidItems.forEach(item => {
     const rate = item.tva;
     const total = item.price * item.quantity;
@@ -228,44 +241,36 @@ const generateBills = async () => {
     totalTVA += tva;
   });
 
-  drawLineWithPrice("Total HT :", totalHT.toFixed(2), y); y += 7;
-  y = drawLineSeparator(y);
+  drawLineWithPrice("Total HT :", totalHT.toFixed(2));
+  drawLineSeparator();
 
-  doc.text("Détail TVA :", leftMargin, y); y += 7;
+  centerText("Détail TVA :", 10, 6);
   Object.entries(tvaMap).forEach(([rate, amount]) => {
-    drawLineWithPrice(`TVA ${rate}% :`, amount.toFixed(2), y);
-    y += 7;
+    drawLineWithPrice(`TVA ${rate}% :`, amount.toFixed(2));
   });
 
-  y = drawLineSeparator(y);
-  drawLineWithPrice("Total TVA :", totalTVA.toFixed(2), y); y += 7;
+  drawLineSeparator();
+  drawLineWithPrice("Total TVA :", totalTVA.toFixed(2));
+  drawLineSeparator();
 
-  y = drawLineSeparator(y);
   const totalTTC = totalHT + totalTVA;
-  drawLineWithPrice("Total TTC :", totalTTC.toFixed(2), y); y += 10;
-
-  y = drawLineSeparator(y);
+  drawLineWithPrice("Total TTC :", totalTTC.toFixed(2));
+  drawLineSeparator();
 
   // Paiements
-  doc.text("Modes de paiement :", leftMargin, y); y += 7;
+  centerText("Modes de paiement :", 10, 6);
   Object.entries(paymentAmounts).forEach(([method, amount]) => {
-    if (amount > 0) {
-      drawLineWithPrice(`${method} :`, amount.toFixed(2), y);
-      y += 7;
-    }
+    if (amount > 0) drawLineWithPrice(`${method} :`, amount.toFixed(2));
   });
 
-  y = drawLineSeparator(y);
+  drawLineSeparator();
 
-  // Merci + infos légales
-  doc.setFontSize(20);
-  centerText("Merci de votre visite !", y); y += 7;
-
-  doc.setFontSize(14);
-  centerText("Code NAF/APE : 56A", y); y += 7;
-  centerText("SIRET : 78850754900038", y); y += 7;
-  centerText("TVA Intracom : FR52788507549", y); y += 7;
-  centerText("0129785", y); y += 7;
+  // Mentions légales
+  centerText("Merci de votre visite !", 18, 8);
+  centerText("Code NAF/APE : 56A", 12, 6);
+  centerText("SIRET : 78850754900038", 12, 6);
+  centerText("TVA Intracom : FR52788507549", 12, 6);
+  centerText("0129785", 12, 6);
 
   // Export
   const blob = doc.output("blob");
@@ -287,6 +292,7 @@ const generateBills = async () => {
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
   const closePaymentModal = () => {
     setIsPaymentModalOpen(false);
