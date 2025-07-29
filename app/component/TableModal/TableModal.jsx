@@ -196,99 +196,95 @@ const handleShare = async () => {
   const totalTTC = calculateTotalTTC();
   const { tvaDetails, totalTVA, totalHT } = calculateTVAAndHT();
 
-  // 📄 Création du PDF au format A5 paysage
-  const doc = new jsPDF({ orientation: "landscape", format: "a5" });
+  // 📄 PDF en A5 portrait
+  const doc = new jsPDF({ orientation: "portrait", format: "a5" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  let y = 15;
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  // 📍 Marges et calculs
-  const leftMargin = 15;
-  const rightMargin = 15;
-  const contentWidth = pageWidth - leftMargin - rightMargin;
+  const marginX = 8;
+  let y = 8;
 
-  // 📍 Fonctions utilitaires
-  const centerText = (text, y) => {
+  const usableWidth = pageWidth - 2 * marginX;
+
+  const centerText = (text, y, fontSize = 12) => {
+    doc.setFontSize(fontSize);
     const textWidth = doc.getTextWidth(text);
     const x = (pageWidth - textWidth) / 2;
     doc.text(text, x, y);
   };
 
-  const drawLineSeparator = (y) => {
-    const startX = leftMargin;
-    const endX = pageWidth - rightMargin;
-
-    doc.setLineDashPattern([1, 1], 0); // 👉 ligne pointillée : 1pt trait, 1pt espace
-    doc.line(startX, y, endX, y);
-    doc.setLineDashPattern([], 0); // 🔁 réinitialise à ligne pleine
-
-    return y + 7; // ajoute 7 unités d’espace après la ligne (margin-bottom)
+  const checkPageBreak = (spaceNeeded = 6) => {
+    if (y + spaceNeeded > pageHeight - 8) {
+      doc.addPage();
+      y = 8;
+    }
   };
 
-  const drawLineWithPrice = (label, price, y) => {
+  const drawLineSeparator = () => {
+    checkPageBreak();
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    doc.setLineDashPattern([], 0);
+    y += 4;
+  };
+
+  const drawLineWithPrice = (label, price) => {
+    checkPageBreak();
     const priceText = `${price} €`;
-    const labelMaxWidth = contentWidth - doc.getTextWidth(priceText) - 5;
-    const truncatedLabel = doc.splitTextToSize(label, labelMaxWidth)[0];
-    doc.text(truncatedLabel, leftMargin, y);
-    const priceX = pageWidth - rightMargin - doc.getTextWidth(priceText);
+    const maxLabelWidth = usableWidth - doc.getTextWidth(priceText) - 4;
+    const truncatedLabel = doc.splitTextToSize(label, maxLabelWidth)[0];
+    doc.setFontSize(10);
+    doc.text(truncatedLabel, marginX, y);
+    const priceX = pageWidth - marginX - doc.getTextWidth(priceText);
     doc.text(priceText, priceX, y);
+    y += 5;
   };
 
-  // 🧾 En-tête centré
-  doc.setFontSize(20);
-  centerText("PICARFRITES", y);
-  y += 10;
+  // 🧾 En-tête
+  centerText("PICARFRITES", y, 16);
+  y += 6;
 
-  doc.setFontSize(14);
-  centerText("26 avenue de Perpignan, 66280 Saleilles", y);
-  y += 7;
+  centerText("26 avenue de Perpignan, 66280 Saleilles", y, 10);
+  y += 5;
 
-  centerText("06 50 72 95 88", y);
-  y += 8;
+  centerText("06 50 72 95 88", y, 10);
+  y += 5;
 
-  centerText(`Table : ${selectedTable}`, y);
-  y += 7;
+  centerText(`Table : ${selectedTable}`, y, 10);
+  y += 5;
 
-  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y);
-  y += 8;
+  centerText(`Date : ${new Date().toLocaleString("fr-FR")}`, y, 10);
+  y += 6;
 
-  y = drawLineSeparator(y);
+  drawLineSeparator();
 
-  // 🧾 Liste des articles alignée
-  doc.setFontSize(12);
+  // 🧾 Liste des articles
+  doc.setFontSize(10);
   items.forEach(item => {
     const label = `${item.name} x${item.quantity}`;
     const price = (item.price * item.quantity).toFixed(2);
-    drawLineWithPrice(label, price, y);
-    y += 7;
+    drawLineWithPrice(label, price);
   });
 
-  y = drawLineSeparator(y);
+  drawLineSeparator();
 
   // 💰 Totaux
-  drawLineWithPrice("Total HT", Number(totalHT).toFixed(2), y);
-  y += 7;
-  y = drawLineSeparator(y);
+  drawLineWithPrice("Total HT", Number(totalHT).toFixed(2));
+  drawLineWithPrice("TVA", Number(totalTVA).toFixed(2));
+  drawLineWithPrice("Total TTC", Number(totalTTC).toFixed(2));
 
-  drawLineWithPrice("TVA", Number(totalTVA).toFixed(2), y);
-  y += 7;
-  y = drawLineSeparator(y);
+  drawLineSeparator();
 
-  drawLineWithPrice("Total TTC", Number(totalTTC).toFixed(2), y);
-  y += 10;
+  // 👋 Message final
+  checkPageBreak();
+  centerText("Merci de votre visite !", y, 14);
 
-  y = drawLineSeparator(y);
-
-  // 👋 Message de fin
-  doc.setFontSize(20);
-  centerText("Merci de votre visite !", y);
-
-  // 📄 Création du PDF
+  // 📄 Création du PDF et partage
   const blob = doc.output("blob");
   const file = new File([blob], `ticket-table-${selectedTable}.pdf`, {
     type: "application/pdf",
   });
 
-  // 📱 Partage natif si possible
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -302,10 +298,10 @@ const handleShare = async () => {
     }
   }
 
-  // 💻 Sinon : ouverture du PDF
   const url = URL.createObjectURL(blob);
   window.open(url);
 };
+
 
   if (loading || loadingOrders) return <p>Chargement des données...</p>;
   if (!user) return <p>Utilisateur non connecté</p>;
