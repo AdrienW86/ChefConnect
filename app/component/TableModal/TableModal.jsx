@@ -241,7 +241,7 @@ const handleShare = async () => {
   };
 
   // 🧾 En-tête
-  centerText("PICARFRITES", y, 16);
+  centerText("SARL PICARFRITES", y, 16);
   y += 6;
 
   centerText("26 avenue de Perpignan, 66280 Saleilles", y, 10);
