@@ -237,3 +237,23 @@
   margin: 10px;
   background-color: rgb(235, 34, 34)
 }
+
+.dayList {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.dayItem {
+  width: 260px;
+  display: flex;
+  margin: 10px;
+  height: 30px;
+  border: 1px solid black;
+  justify-content: space-around;
+}
+
+.spanItemDay {
+  position: relative;
+  top: 5px;
+  color: white;
+}

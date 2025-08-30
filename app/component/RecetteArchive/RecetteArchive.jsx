@@ -521,7 +521,7 @@ async function sendToComptable(item, type, user) {
                             <ul className={styles.dayList}>
                               {monthItem.days.map((dayItem) => (
                                 <li key={dayItem._id} className={styles.dayItem}>
-                                  <span>{dayItem.day}</span> - Total : {dayItem.totalRevenue.toFixed(2)} €
+                                  <span className={styles.spanItemDay}>{dayItem.day} - Total : {dayItem.totalRevenue.toFixed(2)} €</span>
                                   <button
                                     className={styles.detailButton}
                                     onClick={() => setDetailItem({ item: dayItem, type: "jour" })}
