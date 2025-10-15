@@ -360,6 +360,81 @@ const generateBills = async () => {
     }));
   };
 
+
+
+
+  const ticketData = {
+  ticketNumber,
+  date: new Date(),
+  restaurant: {
+    name: "PICARFRITES",
+    address: "26 avenue de Perpignan",
+    zip: "66280 Saleilles",
+    phone: "06.50.72.95.88"
+  },
+
+
+  
+
+
+
+  items: items.map(item => {
+    const totalTTC = item.price * item.quantity;
+    const ht = totalTTC / (1 + item.tva / 100);
+    
+    return {
+      id: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      tva: item.tva,
+      totalHT: ht,
+      totalTTC: totalTTC
+    };
+  }),
+  totals: {
+    totalHT,
+    totalTVA,
+    totalTTC: items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  },
+ 
+  paymentMethods: PAYMENT_METHODS.filter(method => paymentAmounts[method] > 0)
+    .map(method => ({ method, amount: paymentAmounts[method] }))
+};
+
+
+const saveTicket = async (ticketData) => {
+  console.log(ticketData)
+  try {
+    const response = await fetch("/api/recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+       body: JSON.stringify({
+          userId: user.userId,
+          ticketData: ticketData
+        }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      console.log("✅ Ticket enregistré dans recipe :", data.recipe);
+    } else {
+      console.error("❌ Erreur :", data.error);
+    }
+  } catch (error) {
+    console.error("❌ Erreur serveur :", error);
+  }
+};
+
+
+
+
+
+
+
+
+
   const processPayment = async (payAllParam) => {
     setPayAll(payAllParam);
 
@@ -426,6 +501,11 @@ const generateBills = async () => {
     } catch (error) {
       console.error("❌ Erreur lors de l'appel API :", error);
     }
+
+
+
+  await saveTicket(ticketData);
+
   };
 
   const Receipt = ({ items }) => {

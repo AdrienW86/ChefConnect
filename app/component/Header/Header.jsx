@@ -106,14 +106,15 @@ export default function Dashboard() {
   return (
     <header className={styles.header}>
       <div className={styles.boxLogo}>
-        <Image
-          className={styles.logo}
-          src="/logo.png"
-          alt="logo"
-          width={85}
-          height={85}
-          priority
-        />
+        <Link className={styles.logo} href="/dashboard">
+          <Image           
+            src="/logo.png"
+            alt="logo"
+            width={85}
+            height={85}
+            priority
+          />
+        </Link>
       </div>
       <div className={styles.titleBox}>
         <h1 className={styles.title}>{user.username}</h1>
@@ -146,6 +147,9 @@ export default function Dashboard() {
                   Recettes courantes
                 </button>
                 {isRecetteOpen && <RecettesModal onClose={() => setIsRecetteOpen(false)} />}
+                <Link className={styles.paramsButton} href ="/tables">
+                  Tables archivées
+                </Link>
                 <Link className={styles.paramsButton} href ="/recettes">
                   Recettes archivées
                 </Link>
