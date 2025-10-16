@@ -33,7 +33,7 @@ const TicketList = () => {
   }, [user?.userId]);
 
   if (userLoading || loading) return <p>Chargement des tickets...</p>;
-  if (!tickets.length) return <section> <Header /><p>Aucun ticket trouvé.</p>; </section>
+  if (!tickets.length) return <section> <Header /><p>Aucun ticket trouvé.</p> </section>
 
   const toggleDetail = (ticketNumber) => {
     setShowDetails(prev => ({
@@ -42,25 +42,27 @@ const TicketList = () => {
     }));
   };
 
-
   const handleDelete = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/recipe?userId=${user.userId}`, { method: "DELETE" });
-      const data = await res.json();
-      alert(data.message);
-      if (data.success && onDeleted) onDeleted(); // met à jour la liste dans le parent
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de la suppression.");
-    } finally {
-      setLoading(false);
-      setOpen(false);
-    }
-  };
 
+  const confirmed = window.confirm(
+    "Êtes-vous sûr de vouloir supprimer **tous les tickets** ? Cette action est irréversible."
+  );
 
-
+  if (!confirmed) return; 
+  setLoading(true);
+  try {
+    const res = await fetch(`/api/recipe?userId=${user.userId}`, { method: "DELETE" });
+    const data = await res.json();
+    alert(data.message);
+    if (data.success) console.log("Liste effacée");
+  } catch (err) {
+    console.error(err);
+    alert("Erreur lors de la suppression.");
+  } finally {
+    setLoading(false);
+  }
+  window.location.reload();
+};
 
   const handleShare = async (ticket) => {
 
@@ -177,14 +179,13 @@ const TicketList = () => {
   window.open(url);
 };
 
-
   return (
     <>
     <Header />
      <h2 className={styles.h2}>Liste des tickets de caisse</h2>
      <button
         onClick={handleDelete}
-        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md mb-4 block mx-auto"
+        className={styles.delete}
       >
         Supprimer toutes les recettes
       </button>
@@ -216,14 +217,13 @@ const TicketList = () => {
             {new Date(ticket.date).toLocaleString()}
           </div>
 
-          <button onClick={() => toggleDetail(ticket.ticketNumber)} style={{ marginBottom: "10px", cursor: "pointer" }}>
+          <button className={styles.btn} onClick={() => toggleDetail(ticket.ticketNumber)}>
             {showDetails[ticket.ticketNumber] ? "Cacher le détail" : "Voir le détail"}
           </button>
 
-          <button onClick={() => handleShare(ticket)} style={{ marginLeft: "10px", cursor: "pointer" }}>
-  Imprimer le ticket
-</button>
-
+          <button className={styles.btn} onClick={() => handleShare(ticket)}>
+            Imprimer le ticket
+          </button>
 
           {showDetails[ticket.ticketNumber] && (
             <section>
@@ -231,9 +231,9 @@ const TicketList = () => {
                 <thead>
                   <tr>
                     <th style={{ textAlign: "left" }}>Produit</th>
-                    <th style={{ textAlign: "right" }}>HT</th>
-                    <th style={{ textAlign: "right" }}>TVA</th>
-                    <th style={{ textAlign: "right" }}>TTC</th>
+                    <th style={{ textAlign: "left" }}>HT</th>
+                    <th style={{ textAlign: "left" }}>TVA</th>
+                    <th style={{ textAlign: "left" }}>TTC</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -242,9 +242,9 @@ const TicketList = () => {
                     return (
                       <tr key={item.name + i}>
                         <td>{item.name} x{item.quantity}</td>
-                        <td>{Number(item.totalHT).toFixed(2)}</td>
-                        <td>{tvaAmount.toFixed(2)}</td>
-                        <td>{item.totalTTC.toFixed(2)}</td>
+                        <td>{Number(item.totalHT).toFixed(2)}€</td>
+                        <td>{tvaAmount.toFixed(2)}€</td>
+                        <td>{item.totalTTC.toFixed(2)}€</td>
                       </tr>
                     );
                   })}
@@ -254,17 +254,16 @@ const TicketList = () => {
               <hr />
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>Total HT:</div>
-                <div>{ticket.totals.totalHT}</div>
+                <div>{ticket.totals.totalHT}€</div>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>Total TVA:</div>
-                <div>{ticket.totals.totalTVA}</div>
+                <div>{ticket.totals.totalTVA}€</div>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
                 <div>Total TTC:</div>
-                <div>{ticket.totals.totalTTC}</div>
+                <div>{ticket.totals.totalTTC}€</div>
               </div>
-
               <hr />
               <div>
                 <strong>Méthodes de paiement :</strong>
@@ -279,7 +278,6 @@ const TicketList = () => {
                }
                
               </div>
-
               <div style={{ textAlign: "center", marginTop: "10px" }}>
                 Merci pour votre visite !
               </div>
