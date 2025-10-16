@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import Header from '@/app/component/Header/Header';
 import { useUser } from "@/app/Context/UserContext";
+import jsPDF from "jspdf";
 import styles from "./tables.module.css"
 
 const TicketList = () => {
@@ -32,7 +33,7 @@ const TicketList = () => {
   }, [user?.userId]);
 
   if (userLoading || loading) return <p>Chargement des tickets...</p>;
-  if (!tickets.length) return <p>Aucun ticket trouvé.</p>;
+  if (!tickets.length) return <section> <Header /><p>Aucun ticket trouvé.</p>; </section>
 
   const toggleDetail = (ticketNumber) => {
     setShowDetails(prev => ({
@@ -41,26 +42,152 @@ const TicketList = () => {
     }));
   };
 
-  const printTicket = (ticketNumber) => {
-    const ticketElement = ticketRefs.current[ticketNumber];
-    if (!ticketElement) return;
 
-    const printWindow = window.open("", "PRINT", "height=600,width=400");
-    printWindow.document.write("<html><head><title>Ticket</title>");
-    printWindow.document.write("<style>body{font-family:monospace;} table{width:100%;border-collapse:collapse;} th,td{text-align:right;} th{text-align:left;}</style>");
-    printWindow.document.write("</head><body>");
-    printWindow.document.write(ticketElement.innerHTML);
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/recipe?userId=${user.userId}`, { method: "DELETE" });
+      const data = await res.json();
+      alert(data.message);
+      if (data.success && onDeleted) onDeleted(); // met à jour la liste dans le parent
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la suppression.");
+    } finally {
+      setLoading(false);
+      setOpen(false);
+    }
   };
+
+
+
+
+  const handleShare = async (ticket) => {
+
+  const items = ticket.items;
+  console.log(items)
+
+  if (!items || items.length === 0) {
+    alert("Aucun article à partager.");
+    return;
+  }
+
+  // 📄 PDF en A5 portrait
+  const doc = new jsPDF({ orientation: "portrait", format: "a5" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  const marginX = 8;
+  let y = 8;
+  const usableWidth = pageWidth - 2 * marginX;
+
+  const centerText = (text, y, fontSize = 12) => {
+    doc.setFontSize(fontSize);
+    const textWidth = doc.getTextWidth(text);
+    const x = (pageWidth - textWidth) / 2;
+    doc.text(text, x, y);
+  };
+
+  const checkPageBreak = (spaceNeeded = 6) => {
+    if (y + spaceNeeded > pageHeight - 8) {
+      doc.addPage();
+      y = 8;
+    }
+  };
+
+  const drawLineSeparator = () => {
+    checkPageBreak();
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    doc.setLineDashPattern([], 0);
+    y += 4;
+  };
+
+  const drawLineWithPrice = (label, price) => {
+    checkPageBreak();
+    const priceText = `${price} €`;
+    const maxLabelWidth = usableWidth - doc.getTextWidth(priceText) - 4;
+    const truncatedLabel = doc.splitTextToSize(label, maxLabelWidth)[0];
+    doc.setFontSize(10);
+    doc.text(truncatedLabel, marginX, y);
+    const priceX = pageWidth - marginX - doc.getTextWidth(priceText);
+    doc.text(priceText, priceX, y);
+    y += 5;
+  };
+
+  // 🧾 En-tête dynamique
+  centerText(ticket.restaurant.name, y, 16);
+  y += 6;
+
+  centerText(`${ticket.restaurant.address}, ${ticket.restaurant.zip}`, y, 10);
+  y += 5;
+
+  centerText(ticket.restaurant.phone, y, 10);
+  y += 5;
+
+  centerText(`Ticket n° : ${ticket.ticketNumber}`, y, 10);
+  y += 5;
+
+  centerText(`Date : ${new Date(ticket.date).toLocaleString("fr-FR")}`, y, 10);
+  y += 6;
+
+  drawLineSeparator();
+
+  // 🧾 Liste des articles
+  doc.setFontSize(10);
+  items.forEach(item => {
+    const label = `${item.name} x${item.quantity}`;
+    const price = (item.totalTTC ?? (item.price * item.quantity)).toFixed(2);
+    drawLineWithPrice(label, price);
+  });
+
+  drawLineSeparator();
+
+  // 💰 Totaux
+  drawLineWithPrice("Total HT", Number(ticket.totals.totalHT).toFixed(2));
+  drawLineWithPrice("TVA", Number(ticket.totals.totalTVA).toFixed(2));
+  drawLineWithPrice("Total TTC", Number(ticket.totals.totalTTC).toFixed(2));
+
+  drawLineSeparator();
+
+  // 👋 Message final
+  checkPageBreak();
+  centerText("Merci pour votre visite !", y, 14);
+
+  // 📄 Création du PDF et partage
+  const blob = doc.output("blob");
+  const file = new File([blob], `ticket-${ticket.ticketNumber}.pdf`, {
+    type: "application/pdf",
+  });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "Ticket de caisse",
+        text: `Ticket n° ${ticket.ticketNumber}`,
+      });
+      return;
+    } catch (err) {
+      console.error("Erreur de partage :", err);
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  window.open(url);
+};
+
 
   return (
     <>
     <Header />
      <h2 className={styles.h2}>Liste des tickets de caisse</h2>
+     <button
+        onClick={handleDelete}
+        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md mb-4 block mx-auto"
+      >
+        Supprimer toutes les recettes
+      </button>
     <section className={styles.container}>
      
       {tickets.map((ticket) => (
@@ -83,7 +210,7 @@ const TicketList = () => {
             66280 Saleilles<br />
             Tél: 06.50.72.95.88
           </div>
-
+          <p style={{ textAlign: "center", marginBottom: "10px" }}> Table numéro : {ticket.items[0].number}</p>
           <div style={{ textAlign: "center", marginBottom: "10px" }}>
             <strong>Ticket n° {ticket.ticketNumber}</strong><br />
             {new Date(ticket.date).toLocaleString()}
@@ -93,9 +220,10 @@ const TicketList = () => {
             {showDetails[ticket.ticketNumber] ? "Cacher le détail" : "Voir le détail"}
           </button>
 
-          <button onClick={() => printTicket(ticket.ticketNumber)} style={{ marginLeft: "10px", cursor: "pointer" }}>
-            Imprimer le ticket
-          </button>
+          <button onClick={() => handleShare(ticket)} style={{ marginLeft: "10px", cursor: "pointer" }}>
+  Imprimer le ticket
+</button>
+
 
           {showDetails[ticket.ticketNumber] && (
             <section>
@@ -146,7 +274,10 @@ const TicketList = () => {
                       <li key={pm.method + i}>{pm.method} : {pm.amount.toFixed(2)}€</li>
                     ))}
                   </ul>
-                ) : <p>Aucun paiement</p>}
+                ) :      
+                   <p>Aucun paiement</p>
+               }
+               
               </div>
 
               <div style={{ textAlign: "center", marginTop: "10px" }}>

@@ -58,3 +58,40 @@ export async function GET(req) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req) {
+  try {
+    await connectToDatabase();
+
+    const userId = req.nextUrl.searchParams.get("userId");
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "userId manquant" },
+        { status: 400 }
+      );
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Utilisateur non trouvé" },
+        { status: 404 }
+      );
+    }
+
+    // Vider le tableau des recettes
+    user.recipe = [];
+    await user.save();
+
+    return NextResponse.json({
+      success: true,
+      message: "Toutes les recettes archivées ont été supprimées.",
+    });
+  } catch (error) {
+    console.error("Erreur API DELETE /recipe :", error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
