@@ -3,6 +3,7 @@ export default function Maintenance() {
     <main style={{
       display: "flex",
       position: "fixed",
+      width: "100%",
       flexDirection: "column",
       justifyContent: "center",
       alignItems: "center",
