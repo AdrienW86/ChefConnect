@@ -2,6 +2,7 @@ export default function Maintenance() {
   return (
     <main style={{
       display: "flex",
+      position: "fixed",
       flexDirection: "column",
       justifyContent: "center",
       alignItems: "center",
