@@ -8,7 +8,7 @@ import Main from "../component/Main/Main";
 import styles from "./dashboard.module.css";
 
 
-import Dashboard from "../component/Header/Header";
+import Maintenance from "../component/ParamsCard/Maintenance";
 
 
 
@@ -144,7 +144,7 @@ const updateUserSession = async () => {
   
   return (
     <div className={styles.container}>
-      <Dashboard />
+      <Maintenance />
       <Header />
       <section className={styles.time}>
         <p>{date}</p>
