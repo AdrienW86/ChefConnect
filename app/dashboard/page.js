@@ -7,6 +7,11 @@ import Header from '../component/Header/Header'
 import Main from "../component/Main/Main";
 import styles from "./dashboard.module.css";
 
+
+import Dashboard from "../component/Header/Header";
+
+
+
 export default function Dashboard() {
  const { user, loading } = useUser(); 
   const [time, setTime] = useState("");
@@ -139,6 +144,7 @@ const updateUserSession = async () => {
   
   return (
     <div className={styles.container}>
+      <Dashboard />
       <Header />
       <section className={styles.time}>
         <p>{date}</p>
