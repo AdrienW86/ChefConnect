@@ -8,8 +8,6 @@ import Main from "../component/Main/Main";
 import styles from "./dashboard.module.css";
 
 
-import Maintenance from "../component/ParamsCard/Maintenance";
-
 
 
 export default function Dashboard() {
@@ -144,7 +142,6 @@ const updateUserSession = async () => {
   
   return (
     <div className={styles.container}>
-      <Maintenance />
       <Header />
       <section className={styles.time}>
         <p>{date}</p>
